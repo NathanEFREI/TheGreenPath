@@ -1,3 +1,4 @@
+import os
 from pygame import *
 
 init()
@@ -13,8 +14,10 @@ class Game:
         self.screen = display.set_mode((self.WIDTH, self.HEIGHT), RESIZABLE)
         display.set_caption("The Green Path")
 
-        # Charger le background
-        self.background = image.load("assets/ville1.png").convert()
+        # Chemin absolu vers le dossier du fichier .py
+        base_path = os.path.dirname(__file__)
+        image_path = os.path.join(base_path, "assets", "ville1.png")
+        self.background = image.load(image_path).convert()
         self.background = transform.scale(self.background, (self.WIDTH, self.HEIGHT))
 
         self.running = True
