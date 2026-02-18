@@ -1,25 +1,36 @@
-import pygame
+from pygame import *
 
-pygame.init()
+init()
 
 # Instancier la fenêtre de jeu
 class Game:
     def __init__(self):
-        info = pygame.display.Info()
-        # Récupérer la résolution de l'écran (un peu moins pour voir la croix)
-        WIDTH, HEIGHT = info.current_w, info.current_h - 60
+        info = display.Info()
+        # Récupérer la résolution de l'écran 
+        self.WIDTH, self.HEIGHT = info.current_w, info.current_h
+
         # Créer la fenêtre avec bordure
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-        pygame.display.set_caption("EcoGame")
+        self.screen = display.set_mode((self.WIDTH, self.HEIGHT), RESIZABLE)
+        display.set_caption("The Green Path")
+
+        # Charger le background
+        self.background = image.load("assets/ville1.png").convert()
+        self.background = transform.scale(self.background, (self.WIDTH, self.HEIGHT))
+
         self.running = True
 
     # Fonction qui permet de lancer la fenêtre de jeu
     def run(self):
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+            for e in event.get():   # on évite d’écraser "event"
+                if e.type == QUIT:
                     self.running = False
-        pygame.quit()  
+
+            # Afficher le background
+            self.screen.blit(self.background, (0, 0))
+            display.flip()
+
+        quit()
 
 # Créer et lancer le jeu
 game = Game()
