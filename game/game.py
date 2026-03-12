@@ -1,5 +1,7 @@
 import os
 import pygame
+from personnage.joueur import Player 
+
 
 pygame.init()
 
@@ -21,8 +23,16 @@ class Game:
 
         self.background = pygame.image.load(image_path).convert()
         self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
+        
 
         self.running = True
+
+    
+        self.player = Player()  # spawn player
+        self.player.rect.x = 100  # go to x
+        self.player.rect.y = 150  # go to y
+        self.player_list = pygame.sprite.Group()
+        self.player_list.add(self.player)
 
     # Fonction qui permet de lancer la fenêtre de jeu
     def run(self):
@@ -30,6 +40,9 @@ class Game:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     self.running = False
+                if e.type == pygame.KEYDOWN:
+                    if e.key == ord('l'):
+                        pygame.quit()
 
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
