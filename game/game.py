@@ -3,11 +3,12 @@ import pygame
 from personnage.joueur import Player 
 
 
-pygame.init()
+
 
 # Instancier la fenêtre de jeu
 class Game:
     def __init__(self):
+        pygame.init()
         info = pygame.display.Info()
 
         # Récupérer la résolution de l'écran 
@@ -21,36 +22,44 @@ class Game:
         base_path = os.path.dirname(__file__)
         image_path = os.path.join(base_path,"..", "assets", "ville1.png")
 
+        #charger le background
         self.background = pygame.image.load(image_path).convert()
         self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
         
+        self.player = Player()  # spawn player
+        self.pressed = {}
+
+        print(self.pressed)
 
         self.running = True
 
-    
-        self.player = Player()  # spawn player
-        self.player.rect.x = 100  # go to x
-        self.player.rect.y = 150  # go to y
-        self.player_list = pygame.sprite.Group()
-        self.player_list.add(self.player)
 
     # Fonction qui permet de lancer la fenêtre de jeu
     def run(self):
         while self.running:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
+            #condition pour voir si le joueur ferme la fenêtre
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     self.running = False
-                if e.type == pygame.KEYDOWN:
-                    if e.key == ord('l'):
-                        pygame.quit()
+            #condition pour faire avancer le jouer / fermer la fenêtre avec esc
+                elif event.type == pygame.KEYDOWN:
+                    self.pressed[event.key] = True
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False
+                elif event.type == pygame.KEYUP:
+                    self.pressed[event.key] = False
 
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
-            pygame.display.flip()
+            self.screen.blit(self.player.image,self.player.rect)
+            
+            if self.pressed.get(pygame.K_q) and self.player.rect.x > -5:
+                self.player.move_left()
+            elif self.pressed.get(pygame.K_d) and self.player.rect.x < self.WIDTH-25:
+                self.player.move_right()
 
+            pygame.display.flip()
+        print(self.WIDTH)
         pygame.quit()
 
 
-# Créer et lancer le jeu
-game = Game()
-game.run()
