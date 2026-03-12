@@ -28,14 +28,14 @@ class Game:
         
         self.player = Player()  # spawn player
         self.pressed = {}
-
-        print(self.pressed)
+        
 
         self.running = True
 
 
     # Fonction qui permet de lancer la fenêtre de jeu
     def run(self):
+        clock = pygame.time.Clock()
         while self.running:
             #condition pour voir si le joueur ferme la fenêtre
             for event in pygame.event.get():
@@ -53,13 +53,16 @@ class Game:
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.player.image,self.player.rect)
             
+            
             if self.pressed.get(pygame.K_q) and self.player.rect.x > -5:
                 self.player.move_left()
+                
             elif self.pressed.get(pygame.K_d) and self.player.rect.x < self.WIDTH-25:
                 self.player.move_right()
-
+                
+            clock.tick(60)
             pygame.display.flip()
-        print(self.WIDTH)
+        
         pygame.quit()
 
 
