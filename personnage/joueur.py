@@ -6,6 +6,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.assets = []
+        info = pygame.display.Info()
+        # Récupérer la résolution de l'écran 
+        self.WIDTH, self.HEIGHT = info.current_w, info.current_h
         for i in range(0,6):
             base_path = os.path.dirname(__file__)
             img = pygame.image.load(os.path.join(base_path, '..', 'assets', 'hero' + str(i) + '.png')).convert_alpha()
@@ -17,8 +20,7 @@ class Player(pygame.sprite.Sprite):
             
         self.velocity = 3
         self.rect.x = 500
-        self.rect.y = 750
-
+        self.rect.y = self.HEIGHT -250
 #permet de changer de sprite pour animer le personnage
     def update(self):
         self.current_sprite+= 0.2  #ralentir l'animation pour la rendre plus naturel
