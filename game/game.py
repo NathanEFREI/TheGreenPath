@@ -2,6 +2,8 @@ import os
 import pygame
 from personnage.joueur import Player 
 
+#CONSTANTES
+FPS = 60
 
 
 
@@ -54,13 +56,13 @@ class Game:
             self.screen.blit(self.player.image,self.player.rect)
             
             
-            if self.pressed.get(pygame.K_q) and self.player.rect.x > -5:
+            if self.pressed.get(pygame.K_q) and self.player.rect.left > 0:
                 self.player.move_left()
                 
-            elif self.pressed.get(pygame.K_d) and self.player.rect.x < self.WIDTH-25:
+            elif self.pressed.get(pygame.K_d) and self.player.rect.right < self.WIDTH:
                 self.player.move_right()
                 
-            clock.tick(60)
+            clock.tick(FPS)
             pygame.display.flip()
         
         pygame.quit()

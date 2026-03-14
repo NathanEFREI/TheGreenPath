@@ -1,6 +1,12 @@
 import pygame
 import os
 
+#CONSTANTE RÉAJUSTABLE
+VELOCITY = 3
+PLAYER_SCALE = 2.5
+HEIGHT = 735
+WIDTH = 200
+
 class Player(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -12,16 +18,18 @@ class Player(pygame.sprite.Sprite):
         for i in range(0,6):
             base_path = os.path.dirname(__file__)
             img = pygame.image.load(os.path.join(base_path, '..', 'assets', 'hero' + str(i) + '.png')).convert_alpha()
-            img = pygame.transform.scale_by(img, 2)
+            img = pygame.transform.scale_by(img, PLAYER_SCALE)
             self.assets.append(img)
             self.current_sprite = 0
             self.image = self.assets[self.current_sprite]
             self.rect = self.image.get_rect()
-            
-        self.velocity = 3
-        self.rect.x = 500
-        self.rect.y = self.HEIGHT/1.45
-#permet de changer de sprite pour animer le personnage
+        #adapter la position du joueur
+        self.velocity = VELOCITY
+        x_ratio = WIDTH / self.WIDTH
+        y_ratio = HEIGHT / self.HEIGHT
+        self.rect.x = self.WIDTH* x_ratio
+        self.rect.y = self.HEIGHT * y_ratio
+    #permet de changer de sprite pour animer le personnage
     def update(self):
         self.current_sprite+= 0.2  #ralentir l'animation pour la rendre plus naturel
         if self.current_sprite>=len(self.assets):
@@ -29,13 +37,13 @@ class Player(pygame.sprite.Sprite):
 
         self.image= self.assets[int(self.current_sprite)] 
 
-#animation + avancé le personnage avec un rotation vers la gauche         
+    #animation + avancé le personnage avec un rotation vers la gauche         
     def move_left(self):
         self.rect.x -= self.velocity
         self.update()
         self.image = pygame.transform.flip(self.image, True, False) 
 
-#animation + avancé le personnage
+    #animation + avancé le personnage
     def move_right(self):
         self.rect.x += self.velocity
         self.update()
