@@ -33,6 +33,7 @@ class Game:
         
 
         self.running = True
+        self.move: bool
 
 
     # Fonction qui permet de lancer la fenêtre de jeu
@@ -55,7 +56,6 @@ class Game:
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.player.image,self.player.rect)
             self.move = True
-            
             self.player.apply_gravity()
 
             if self.pressed.get(pygame.K_q) and self.player.rect.left > 0:
@@ -69,6 +69,10 @@ class Game:
             #verifie si barre espace est pressé + si le personnage est déjà en train de sauté ou non
             if self.pressed.get(pygame.K_SPACE) and not self.player.jumping:
                 self.player.jump()
+                self.move = False
+
+            if self.move:
+                self.player.idle()
 
             
 

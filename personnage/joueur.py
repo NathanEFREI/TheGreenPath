@@ -1,6 +1,7 @@
 import pygame
 import os
 
+
 #CONSTANTE RÉAJUSTABLE
 VELOCITY = 5
 PLAYER_SCALE = 2.5
@@ -25,17 +26,17 @@ class Player(pygame.sprite.Sprite):
             base_path = os.path.dirname(__file__)
             img = pygame.image.load(os.path.join(base_path, '..', 'assets/idle', 'hero_idle' + str(i) + '.png')).convert_alpha()
             img = pygame.transform.scale_by(img, PLAYER_SCALE)
-            self.walk_assets.append(img)
+            self.idle_assets.append(img)
 
 
         for i in range(0,6):
             base_path = os.path.dirname(__file__)
-            img = pygame.image.load(os.path.join(base_path, '..', 'assets', 'hero' + str(i) + '.png')).convert_alpha()
+            img = pygame.image.load(os.path.join(base_path, '..', 'assets/walk', 'hero' + str(i) + '.png')).convert_alpha()
             img = pygame.transform.scale_by(img, PLAYER_SCALE)
             self.walk_assets.append(img)
             
         for i in range(0, 8):
-            img = pygame.image.load(os.path.join(base_path, '..', 'assets', 'hero_jump' + str(i) + '.png')).convert_alpha()
+            img = pygame.image.load(os.path.join(base_path, '..', 'assets/jump', 'hero_jump' + str(i) + '.png')).convert_alpha()
             self.jump_assets.append(pygame.transform.scale_by(img, PLAYER_SCALE))
 
         self.current_sprite = 0
@@ -61,42 +62,38 @@ class Player(pygame.sprite.Sprite):
         
         
     #permet de changer de sprite pour animer le personnage
-    def update(self):
+    def update(self,assets):
         self.current_sprite+= 0.2  #ralentir l'animation pour la rendre plus naturel
+        LONGUEUR = len(assets)
         if self.jumping:
             # --- LOGIQUE DE SAUT (8 frames) ---
-            if self.current_sprite >= len(self.jump_assets):
+            if self.current_sprite >= LONGUEUR :
                 # On reste sur la dernière frame de chute à la fin de l'anim
-                self.current_sprite = len(self.jump_assets) - 1
+                self.current_sprite = LONGUEUR - 1
             
-            self.image = self.jump_assets[int(self.current_sprite)]
+            self.image = assets[int(self.current_sprite)]
 
         else:
             # --- LOGIQUE DE MARCHE (6 frames) ---
-            if self.current_sprite >= len(self.walk_assets):
+            if self.current_sprite >= LONGUEUR- 1:
                 self.current_sprite = 0 # On boucle la marche
             
-            self.image = self.walk_assets[int(self.current_sprite)]
+            self.image = assets[int(self.current_sprite)]
 
-    
-            
-        
-
-        
 
             
     #animation + avancé le personnage avec un rotation vers la gauche         
     def move_left(self):
         self.rect.x -= self.velocity
         if not self.jumping:
-            self.update()
+            self.update(self.walk_assets)
         self.image = pygame.transform.flip(self.image, True, False) 
 
     #animation + avancé le personnage
     def move_right(self):
         self.rect.x += self.velocity
         if not self.jumping:
-            self.update()
+            self.update(self.walk_assets)
 
     def jump(self):
         if not self.jumping:
@@ -104,7 +101,10 @@ class Player(pygame.sprite.Sprite):
             # On réinitialise la vitesse de saut à sa hauteur maximale
             self.JUMP_VELOCITY = self.JUMP_HEIGHT 
             self.current_sprite = 0 
-    
+
+    def idle(self):
+        self.update(self.idle_assets)
+
     def apply_gravity(self):
         if self.jumping:
             # On monte : on soustrait la vitesse actuelle à Y 
@@ -112,7 +112,7 @@ class Player(pygame.sprite.Sprite):
             # On réduit la puissance du saut avec la constante GRAVITY
             self.JUMP_VELOCITY -= (self.GRAVITY * 0.05)
             #on applique l'animation
-            self.update()
+            self.update(self.jump_assets)
             # Vérifier si on touche le sol
             if self.rect.y >= self.GROUND:
                 self.rect.y = self.GROUND
