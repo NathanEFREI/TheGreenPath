@@ -1,5 +1,6 @@
 import pygame
 
+#CONSTANTES RÉAJUSTABLE
 FPS = 60
 
 pygame.init()   #initialiser pygame

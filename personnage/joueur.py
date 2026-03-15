@@ -9,9 +9,6 @@ WIDTH_START = 200
 
 
 
-
-
-
 class Player(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -22,6 +19,14 @@ class Player(pygame.sprite.Sprite):
 
         self.walk_assets = []
         self.jump_assets = []
+        self.idle_assets = []
+
+        for i in range(0,4):
+            base_path = os.path.dirname(__file__)
+            img = pygame.image.load(os.path.join(base_path, '..', 'assets/idle', 'hero_idle' + str(i) + '.png')).convert_alpha()
+            img = pygame.transform.scale_by(img, PLAYER_SCALE)
+            self.walk_assets.append(img)
+
 
         for i in range(0,6):
             base_path = os.path.dirname(__file__)
@@ -52,6 +57,8 @@ class Player(pygame.sprite.Sprite):
         self.JUMP_HEIGHT = 20
         self.JUMP_VELOCITY = self.JUMP_HEIGHT
         self.GROUND = int(self.HEIGHT * y_ratio)
+
+        
         
     #permet de changer de sprite pour animer le personnage
     def update(self):
@@ -70,6 +77,12 @@ class Player(pygame.sprite.Sprite):
                 self.current_sprite = 0 # On boucle la marche
             
             self.image = self.walk_assets[int(self.current_sprite)]
+
+    
+            
+        
+
+        
 
             
     #animation + avancé le personnage avec un rotation vers la gauche         
@@ -107,3 +120,5 @@ class Player(pygame.sprite.Sprite):
                 # On remet la puissance de saut prête pour le prochain coup
                 self.JUMP_VELOCITY = self.JUMP_HEIGHT
                 self.image = self.walk_assets[0]
+
+    

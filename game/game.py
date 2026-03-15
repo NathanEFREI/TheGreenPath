@@ -54,18 +54,23 @@ class Game:
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.player.image,self.player.rect)
+            self.move = True
             
             self.player.apply_gravity()
 
             if self.pressed.get(pygame.K_q) and self.player.rect.left > 0:
                 self.player.move_left()
+                self.move = False
                 
             if self.pressed.get(pygame.K_d) and self.player.rect.right < self.WIDTH:
                 self.player.move_right()
+                self.move = False
 
             #verifie si barre espace est pressé + si le personnage est déjà en train de sauté ou non
             if self.pressed.get(pygame.K_SPACE) and not self.player.jumping:
                 self.player.jump()
+
+            
 
                 
             clock.tick(FPS)
