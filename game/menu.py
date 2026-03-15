@@ -1,5 +1,7 @@
 import pygame
 
+FPS = 60
+
 pygame.init()   #initialiser pygame
 info = pygame.display.Info()
 WIDTH, HEIGHT = info.current_w, info.current_h #prend la taille de l'écran au max
@@ -54,5 +56,5 @@ while running:
     screen.blit(text_button2, rect_text2)
     screen.blit(text_button3, rect_text3)
     pygame.display.flip()
-    clock.tick(120) #limite de fps
+    clock.tick(FPS) #limite de fps
 pygame.quit()

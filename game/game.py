@@ -2,7 +2,7 @@ import os
 import pygame
 from personnage.joueur import Player 
 
-#CONSTANTES
+#CONSTANTES RÉAJUSTABLE
 FPS = 60
 
 
@@ -43,7 +43,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-            #condition pour faire avancer le jouer / fermer la fenêtre avec esc
+            #condition fermer la fenêtre avec esc
                 elif event.type == pygame.KEYDOWN:
                     self.pressed[event.key] = True
                     if event.key == pygame.K_ESCAPE:
@@ -55,12 +55,18 @@ class Game:
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.player.image,self.player.rect)
             
-            
+            self.player.apply_gravity()
+
             if self.pressed.get(pygame.K_q) and self.player.rect.left > 0:
                 self.player.move_left()
                 
-            elif self.pressed.get(pygame.K_d) and self.player.rect.right < self.WIDTH:
+            if self.pressed.get(pygame.K_d) and self.player.rect.right < self.WIDTH:
                 self.player.move_right()
+
+            #verifie si barre espace est pressé + si le personnage est déjà en train de sauté ou non
+            if self.pressed.get(pygame.K_SPACE) and not self.player.jumping:
+                self.player.jump()
+
                 
             clock.tick(FPS)
             pygame.display.flip()
