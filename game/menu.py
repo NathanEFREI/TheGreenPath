@@ -1,5 +1,8 @@
 import pygame
 from menus.creer_partie import *
+
+FPS = 120
+
 pygame.init()   #initialiser pygame
 info = pygame.display.Info()
 WIDTH, HEIGHT = info.current_w, info.current_h #prend la taille de l'écran au max
@@ -64,5 +67,5 @@ while running:
         creer_party(screen, WIDTH, HEIGHT)
 
     pygame.display.flip()
-    clock.tick(120) #limite de fps
+    clock.tick(FPS) #limite de fps
 pygame.quit()
