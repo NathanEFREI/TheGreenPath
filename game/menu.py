@@ -15,26 +15,60 @@ fonttitle = pygame.font.SysFont("comicsansms", 80) #police et taille pour le tit
 font_bouton = pygame.font.SysFont("calibri", 35, bold=True) #police et taille pour les boutons
 #couleurs et texte :
 texttitle = fonttitle.render("The Green Path", True, "black")
-
+active1,active2 = False,False
 fenetre = False
 darken_overlay = False
-rect_popup = creer_party(screen, WIDTH, HEIGHT)
+rect_popup,inputbox2,inputbox1 = creer_party(screen, WIDTH, HEIGHT,active1,active2)
 while running:
     pygame.mouse.set_cursor(*pygame.cursors.diamond)
+    mouse_x, mouse_y = pygame.mouse.get_pos()
     keys = pygame.key.get_pressed() #prend les touches du clavier
     for event in pygame.event.get():
-        if event.type == pygame.QUIT or keys[pygame.K_ESCAPE]: #permet de quitter
-            running = False
+        if event.type == pygame.QUIT:
+            if confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
+                running = False
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
+                running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            if fenetre:
+                if inputbox1.collidepoint(mouse_x, mouse_y):
+                    active1 = True
+                    active2 = False
+                    print("j1")
+                elif inputbox2.collidepoint(mouse_x, mouse_y):
+                    active2 = True
+                    active1 = False
+                    print("j2")
+
+                elif not rect_popup.collidepoint(mouse_x, mouse_y):
+                    fenetre = False
+                    darken_overlay = False
+                    active1 = False
+                    active2 = False
+
+            # CAS 2 : Le popup est FERMÉ (On est sur le menu principal)
+            else:
+                if rect1.collidepoint(mouse_x, mouse_y):
+                    fenetre = True
+                    darken_overlay = True
+                elif rect4.collidepoint(mouse_x, mouse_y):
+                    if confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
+                        running = False
     screen.fill("green") #couleur de l'écran
 
     #afficher les rectangles
-    mouse_x, mouse_y = pygame.mouse.get_pos()
-    rect1 = draw_hover_button(pos_x, HEIGHT * 0.25, WIDTH / 2.5, HEIGHT / 6, "orange", "Créer une partie", font_bouton,
+
+    rect1 = draw_hover_button(pos_x, HEIGHT * 0.2, WIDTH / 2.5, HEIGHT / 6, "orange", "Créer une partie", font_bouton,
                         screen,"darkorchid1")
-    rect2 = draw_hover_button(pos_x, HEIGHT * 0.45, WIDTH / 2.5, HEIGHT / 6, "orange", "Charger une partie", font_bouton,
+    rect2 = draw_hover_button(pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6, "orange", "Charger une partie", font_bouton,
                         screen,"darkorchid1")
-    rect3 = draw_hover_button(pos_x, HEIGHT * 0.65, WIDTH / 2.5, HEIGHT / 6, "orange", "Paramètre", font_bouton,
+    rect3 = draw_hover_button(pos_x, HEIGHT * 0.6, WIDTH / 2.5, HEIGHT / 6, "orange", "Paramètre", font_bouton,
                         screen,"darkorchid1")
+    rect4 = draw_hover_button(pos_x, HEIGHT*0.8, WIDTH/2.5, HEIGHT/6, "orange", "Quittez", font_bouton,
+                              screen,"darkorchid1")
 
     #permet de centrer les textes
     if darken_overlay:
@@ -49,15 +83,9 @@ while running:
     #affichage des textes
     screen.blit(texttitle, rect_titre)
 
-    if event.type == pygame.MOUSEBUTTONDOWN:
-        if not fenetre and rect1.collidepoint(mouse_x, mouse_y):
-                fenetre = True
-                darken_overlay = True
-        if not rect_popup.collidepoint(mouse_x, mouse_y):
-            fenetre = False
-            darken_overlay = False
+
     if fenetre :
-        creer_party(screen, WIDTH, HEIGHT)
+        creer_party(screen, WIDTH, HEIGHT,active1,active2)
 
     pygame.display.flip()
     clock.tick(FPS) #limite de fps

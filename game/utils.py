@@ -37,3 +37,63 @@ def draw_hover_button(x, y, width, height, color, text, font, screen,over_color,
         pygame.draw.rect(screen,over_color,button_rect, border_radius=15)
     screen.blit(rendered_text, text_rect)
     return button_rect
+
+
+# On ajoute les paramètres dont la fonction a besoin pour travailler !
+def confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
+    """ Affiche une fenêtre de confirmation """
+
+    # 1. On crée une horloge locale pour ne pas faire exploser le processeur
+    clock = pygame.time.Clock()
+
+    # 2. LA MAGIE : On prend une "photo" de l'écran de jeu actuel
+    fond_ecran = screen.copy()
+
+    # 3. On prépare le voile noir UNE SEULE FOIS
+    overlay = pygame.Surface((WIDTH, HEIGHT))
+    overlay.set_alpha(128)
+    overlay.fill((0, 0, 0))
+
+    while True:  # Pas besoin de variable 'confirming', le 'return' arrête la boucle
+
+        # --- DESSIN ---
+        # A. On colle la "photo" de base pour effacer l'image précédente
+        screen.blit(fond_ecran, (0, 0))
+
+        # B. On applique le voile noir par-dessus
+        screen.blit(overlay, (0, 0))
+
+        # C. Dessin de la boîte de dialogue
+        dialog_rect = pygame.Rect(0, 0, 400, 200)
+        dialog_rect.center = (WIDTH // 2, HEIGHT // 2)
+        pygame.draw.rect(screen, (200, 200, 200), dialog_rect, border_radius=15)
+
+        # D. Texte de confirmation
+        msg = font_bouton.render("Voulez-vous quitter ?", True, "black")
+        msg_rect = msg.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 40))
+        screen.blit(msg, msg_rect)
+
+
+        oui = draw_hover_button(WIDTH//2-110,HEIGHT//2+20,100,50,"gray","Oui",font_bouton,screen,"red","white")
+        non = draw_hover_button(WIDTH//2+10,HEIGHT//2+20,100,50,"gray","Non",font_bouton,screen,"green","white")
+
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                return True
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if oui.collidepoint(event.pos):
+                    return True  # On quitte
+                if non.collidepoint(event.pos):
+                    return False  # On revient au jeu
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return False  # On annule avec Echap
+
+        # On limite à 60 images par seconde
+        clock.tick(60)
