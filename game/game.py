@@ -11,6 +11,7 @@ FPS = 60
 class Game:
     def __init__(self):
         pygame.init()
+        pygame.mixer.init()
         info = pygame.display.Info()
 
         # Récupérer la résolution de l'écran
@@ -22,6 +23,10 @@ class Game:
 
         # Chemin absolu vers le dossier du fichier .py
         base_path = os.path.dirname(__file__)
+        music_path = os.path.join(base_path, "..", "assets", "Sound", "Lobby Time.mp3")
+        pygame.mixer.music.load(music_path)
+        pygame.mixer.music.set_volume(0.2)
+        pygame.mixer.music.play(-1)
         image_path = os.path.join(base_path, "..", "assets", "ville1.png")
 
         # charger le background
