@@ -1,12 +1,15 @@
-import pygame
 import os
+import pygame
+from pygame.surface import Surface
+import assets.asset as aa
 
 
 #CONSTANTE RÉAJUSTABLE
 VELOCITY = 5
-PLAYER_SCALE = 2.5
-HEIGHT_START = 735
-WIDTH_START = 200
+PLAYER_SCALE_W = 80 / 2560
+PLAYER_SCALE_H = 80 / 1600
+X_RATIO = 200 / 2560
+Y_RATIO = 1024 / 1440
 
 
 
@@ -18,46 +21,36 @@ class Player(pygame.sprite.Sprite):
         # Récupérer la résolution de l'écran 
         self.WIDTH, self.HEIGHT = info.current_w, info.current_h
 
-        self.walk_assets = []
-        self.jump_assets = []
-        self.idle_assets = []
+        # wahou ! (NEW pour moi aussi jai voulu teste deso)
+        def scale_sprite(load, scale):
+            return lambda x: scale(load(x).convert_alpha() ,(PLAYER_SCALE_W * self.WIDTH, PLAYER_SCALE_H* self.HEIGHT))
 
-        for i in range(0,4):
-            base_path = os.path.dirname(__file__)
-            img = pygame.image.load(os.path.join(base_path, '..', 'assets/idle', 'hero_idle' + str(i) + '.png')).convert_alpha()
-            img = pygame.transform.scale_by(img, PLAYER_SCALE)
-            self.idle_assets.append(img)
+        fonction = scale_sprite(pygame.image.load, pygame.transform.scale)
 
+        self.walk_assets = aa.recup_sprite("walk", fonction)
+        self.jump_assets = aa.recup_sprite("jump", fonction)
+        self.idle_assets = aa.recup_sprite("idle", fonction)
 
-        for i in range(0,6):
-            base_path = os.path.dirname(__file__)
-            img = pygame.image.load(os.path.join(base_path, '..', 'assets/walk', 'hero' + str(i) + '.png')).convert_alpha()
-            img = pygame.transform.scale_by(img, PLAYER_SCALE)
-            self.walk_assets.append(img)
-            
-        for i in range(0, 8):
-            img = pygame.image.load(os.path.join(base_path, '..', 'assets/jump', 'hero_jump' + str(i) + '.png')).convert_alpha()
-            self.jump_assets.append(pygame.transform.scale_by(img, PLAYER_SCALE))
 
         self.current_sprite = 0
         self.image = self.walk_assets[self.current_sprite]
         self.rect = self.image.get_rect()
 
-        
-        
+
         #adapter la position du joueur
         self.velocity = VELOCITY
-        x_ratio = WIDTH_START / self.WIDTH
-        y_ratio = HEIGHT_START / self.HEIGHT
-        self.rect.x = self.WIDTH* x_ratio
-        self.rect.y = int(self.HEIGHT * y_ratio)
+        self.rect.x = X_RATIO * self.WIDTH
+        self.rect.y = Y_RATIO * self.HEIGHT
 
+        
         #constante du jump
         self.jumping = False
         self.GRAVITY = 40
         self.JUMP_HEIGHT = 20
         self.JUMP_VELOCITY = self.JUMP_HEIGHT
-        self.GROUND = int(self.HEIGHT * y_ratio)
+
+        #####
+        self.GROUND = self.rect.y
 
         
         
