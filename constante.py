@@ -1,0 +1,20 @@
+### Constante Joueur
+# PAS TOUCHER
+PLAYER_SCALE_W = 80 / 2560
+PLAYER_SCALE_H = 80 / 1600
+X_RATIO = 200 / 2560
+Y_RATIO = 1024 / 1440
+
+#CONSTANTE RÉAJUSTABLE
+INIT_SPRITE = ["walk", "jump", "idle"]
+VELOCITY = 5
+
+
+### Constante game
+# CONSTANTES RÉAJUSTABLE
+FPS = 60
+
+
+### Constante cinematique
+VITESSE_LETTRE = 30
+VITESSE_FADE   = 6

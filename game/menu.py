@@ -1,12 +1,12 @@
 # En haut de menu.py, remplace l'import existant par :
 from game.menus.creer_partie import creer_party
+from constante import FPS
 from game.cinematique import SceneCinematique
 from game.game import Game
 from game.utils import draw_hover_button, confirm_quit
 import pygame
 
 def main_menu():
-    FPS = 120
     pygame.init()
     info = pygame.display.Info()
     WIDTH, HEIGHT = info.current_w, info.current_h

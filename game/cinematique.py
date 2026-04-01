@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+from constante import VITESSE_LETTRE, VITESSE_FADE
+from game.game import Fenetre
 import os
 import pygame
 from ui.dialogue import afficher_dialogue
@@ -53,17 +54,17 @@ SLIDES = [
     },
 ]
 
-VITESSE_LETTRE = 30
-VITESSE_FADE   = 6
 
 
-class SceneCinematique:
+
+class SceneCinematique():
     def __init__(self, screen: pygame.Surface, callback_fin):
+        
         self.screen       = screen
         self.callback_fin = callback_fin
         self.WIDTH, self.HEIGHT = screen.get_size()
 
-        # 🎵 Musique avec fade in automatique
+        #Musique avec fade in automatique
         musique = os.path.join(BASE_DIR, "assets", "Sound", "musique_cinematique.mp3")
         try:
             pygame.mixer.music.load(musique)

@@ -1,26 +1,85 @@
 import os
 import pygame
+from pygame.surface import Surface
 from personnage.joueur import Player
 from ui.dialogue import afficher_dialogue
+from constante import FPS
 
-# CONSTANTES RÉAJUSTABLE
-FPS = 60
 
 
 # Instancier la fenêtre de jeu
-class Game:
-    def __init__(self):
+class Fenetre:
+    def __init__(self, caption: str):
         pygame.init()
-        pygame.mixer.init()
         info = pygame.display.Info()
 
         # Récupérer la résolution de l'écran
         self.WIDTH, self.HEIGHT = info.current_w, info.current_h
 
         # Créer la fenêtre avec bordure
-        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), pygame.RESIZABLE)
-        pygame.display.set_caption("The Green Path")
+        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), pygame.FULLSCREEN)
+        self.fullscreen = True
+        self.elems = None # Pour éviter d'avoir une erreur quand on appelle resize sans avoir def self.elems dans la sous classe
 
+        pygame.display.set_caption(caption)
+        self.running = True
+
+
+    def event(self, event):
+        if event.type == pygame.QUIT:
+            self.running = False
+
+        elif event.type == pygame.VIDEORESIZE:
+            self.WIDTH, self.HEIGHT = event.size
+            self.resize()
+        
+        elif event.type == pygame.KEYDOWN:
+                # fullscreen ou pas avec f11
+                if event.key == pygame.K_F11: # peut faire un dico ou on met une fonction qui fait ca
+                    self.fullscreen = not self.fullscreen
+                    self.resize()
+
+                # condition fermer la fenêtre avec esc
+                elif event.key == pygame.K_ESCAPE:
+                    self.running = False
+
+
+    def resize_obj(self):
+        """
+        Permet de redimensionner la fenetre et tous les elements dans la liste passée
+        """
+        # scale des images de base (basique)
+        for e in self.elems:
+            setattr(self, e, pygame.transform.scale(getattr(self, e + "_base"), (self.WIDTH, self.HEIGHT)))
+
+        # Ceux qui ont deja leur methode resize (que Player pour l'instant)
+        ## une liste pour appeler direct resize de l'element ?
+        self.player.actu(self.WIDTH, self.HEIGHT)
+
+
+    def resize(self):
+        """
+        Permet de passer du fullscreen en mode resize et inversement
+        """
+        if self.fullscreen:
+            info = pygame.display.Info()
+            self.WIDTH, self.HEIGHT = info.current_w, info.current_h
+            mode = pygame.FULLSCREEN
+            dim = (self.WIDTH, self.HEIGHT)
+        else:
+            mode = pygame.RESIZABLE
+            dim = (int(self.WIDTH * 0.98), int(self.HEIGHT * 0.98))
+        self.screen = pygame.display.set_mode(dim, mode)
+        if self.elems is not None:
+            self.resize_obj()
+
+
+
+class Game(Fenetre):
+    def __init__(self):
+        # permet d'hériter de la classe parent (fait le init du parent)
+        super().__init__("The Green Path")
+        pygame.mixer.init()
         # Chemin absolu vers le dossier du fichier .py
         base_path = os.path.dirname(__file__)
         image_path = os.path.join(base_path, "..", "assets", "ville1.png")
@@ -32,30 +91,37 @@ class Game:
         pygame.mixer.music.play(-1)
 
         # charger le background
-        self.background = pygame.image.load(image_path).convert()
-        self.background = pygame.transform.scale(self.background, (self.WIDTH, self.HEIGHT))
+        self.background_base = pygame.image.load(image_path).convert()
+        # pour eviter la perte d'info lors du scale on differentie l'image de base et celle scale
+        self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
 
-        self.player = Player()  # spawn player
-        self.pressed = {}
-
-        self.running = True
+        self.player = Player(self.WIDTH, self.HEIGHT)  # spawn player avec taille de fenêtre
+        self.player.actu(self.WIDTH, self.HEIGHT)
+        self.pressed = {} # ? pk faire ??
+ 
         self.move: bool
+
         # État du dialogue (None = pas de dialogue, sinon tuple (texte, couleur))
         self.dialogue_actuel = None
+        
+        # Element a redimensionner
+        self.elems = ["background"] # on mettra les plateformes et autres surfaces 
 
-    # Fonction qui permet de lancer la fenêtre de jeu
+
     def run(self):
         clock = pygame.time.Clock()
         while self.running:
             # condition pour voir si le joueur ferme la fenêtre
+            # print(self.WIDTH, self.HEIGHT) # debug temporaire
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                # condition fermer la fenêtre avec esc
-                elif event.type == pygame.KEYDOWN:
-                    self.pressed[event.key] = True
-                    if event.key == pygame.K_ESCAPE:
-                        self.running = False
+                # regarde si une touche est pressé
+                self.event(event)
+
+                # devrait etre ajouter d'une maniere ou d'une autre a la methode event
+                # ou tt simplement faire une methode pour la classe game et pas fenetre
+                if event.type == pygame.KEYDOWN:
+                    self.pressed[event.key] = True # ?
+
                     # Touche E : afficher/fermer un dialogue (exemple)
                     if event.key == pygame.K_e:
                         if self.dialogue_actuel:
@@ -66,12 +132,16 @@ class Game:
                                 "Bonjour ! Je suis le protecteur de la nature.",
                                 "dodgerblue",
                             )
+
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False
 
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
+            # appeler le niveau: self.screen.blits() pour mettre les plateformes
+            # Afficher le joueur
             self.screen.blit(self.player.image, self.player.rect)
+
             self.move = True
             self.player.apply_gravity()
 
