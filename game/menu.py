@@ -28,7 +28,7 @@ def main_menu():
     nom_partie   = ""
     nom_joueur   = ""
     fenetre_param = False
-    volume = 1
+    volume = 0.4
 
     while running:
         pygame.mouse.set_cursor(*pygame.cursors.diamond)
@@ -147,7 +147,7 @@ def main_menu():
     def lancer_jeu():
         game.run()
 
-    cine = SceneCinematique(game.screen, callback_fin=lancer_jeu)
+    cine = SceneCinematique(game.screen, volume = volume, callback_fin=lancer_jeu)
     clock_cine = pygame.time.Clock()
 
     while not cine.terminee:
