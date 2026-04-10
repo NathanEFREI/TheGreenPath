@@ -197,7 +197,7 @@ class SceneCinematique():
         if self.slide_prete and self._texte_termine():
             if (pygame.time.get_ticks() // 600) % 2 == 0:
                 hint = self.font_hint.render(
-                    "[ Espace ] continuer      [ Échap ] passer la cinématique",
+                    "[ Espace ] continuer",
                     True,
                     (160, 160, 160),
                 )
