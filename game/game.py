@@ -154,12 +154,7 @@ class Game(Fenetre):
                         elif self.salle_actuelle == "lumiere" and not self.epreuve.active:
                             self.epreuve.lancer()
                             self.dialogue_actuel = ("Vite ! Eteins les lumières !", "orange")
-                        else:
-                            # Exemple : afficher un dialogue du joueur (bleu)
-                            self.dialogue_actuel = (
-                                "Bonjour ! Je suis le protecteur de la nature.",
-                                "dodgerblue",
-                            )
+                       
 
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False

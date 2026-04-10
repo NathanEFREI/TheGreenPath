@@ -23,7 +23,7 @@ SLIDES = [
         "duree_min": 3000,
     },
     {
-        "image": os.path.join(BASE_DIR, "assets", "cinematique", "slide_retour.png"),
+        "image": os.path.join(BASE_DIR, "assets", "cinematique", "ville1.png"),
         "texte": "Tu es parti il y a longtemps. Mais quelque chose t'a ramené ici, dans "
                  "ta ville natale. Tu ne reconnais plus les rues que tu aimais.",
         "duree_min": 3000,
@@ -36,7 +36,7 @@ SLIDES = [
         "duree_min": 3000,
     },
     {
-        "image": os.path.join(BASE_DIR, "assets", "cinematique", "slide_mission.png"),
+        "image": os.path.join(BASE_DIR, "assets", "cinematique", "slide_gardiens.png"),
         "texte": "Tu devras les trouver, relever leurs épreuves, et apprendre leurs "
                  "secrets. Ce n'est qu'armé de ces gestes que tu pourras revenir "
                  "sauver Nitidopolis.",
