@@ -58,17 +58,18 @@ SLIDES = [
 
 
 class SceneCinematique():
-    def __init__(self, screen: pygame.Surface, callback_fin):
+    def __init__(self, screen: pygame.Surface, callback_fin, volume):
         
         self.screen       = screen
         self.callback_fin = callback_fin
         self.WIDTH, self.HEIGHT = screen.get_size()
+        self.volume = volume
 
         #Musique avec fade in automatique
         musique = os.path.join(BASE_DIR, "assets", "Sound", "musique_cinematique.mp3")
         try:
             pygame.mixer.music.load(musique)
-            pygame.mixer.music.set_volume(0.4)
+            pygame.mixer.music.set_volume(self.volume)
             pygame.mixer.music.play(-1, fade_ms=3000)  # fade in 3s
         except Exception:
             pass
