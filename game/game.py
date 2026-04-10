@@ -186,9 +186,9 @@ class Game(Fenetre):
             # Gestion de la fin de l'épreuve
             if self.epreuve.termine:
                 if self.epreuve.reussite:
-                    self.dialogue_actuel = ("Gagné ! La ville respire mieux.", "green")
+                    self.dialogue_actuel = ("Gagné ! La ville dépense moins!", "green")
                 else:
-                    self.dialogue_actuel = ("Trop lent ! Réessaie.", "red")
+                    self.dialogue_actuel = ("Trop lent ! Réessaie de les éteindre.", "red")
                 self.epreuve.termine = False
 
 

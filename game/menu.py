@@ -98,7 +98,7 @@ def main_menu():
                         darken_overlay = False
                 else:
                     if rect1.collidepoint(mouse_x, mouse_y):
-                        fenetre_param= True
+                        fenetre = True
                         darken_overlay = True
                     elif rect3.collidepoint(mouse_x, mouse_y):
                         fenetre_param = True
