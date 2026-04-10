@@ -4,6 +4,7 @@ from constante import FPS
 from game.cinematique import SceneCinematique
 from game.game import Game
 from game.utils import draw_hover_button, confirm_quit
+from game.parametre import afficher_parametres
 import pygame
 
 def main_menu():
@@ -26,6 +27,8 @@ def main_menu():
     darken_overlay = False
     nom_partie   = ""
     nom_joueur   = ""
+    fenetre_param = False
+    volume = 1
 
     while running:
         pygame.mouse.set_cursor(*pygame.cursors.diamond)
@@ -82,9 +85,23 @@ def main_menu():
                         darken_overlay = False
                         active1        = False
                         active2        = False
+                elif fenetre_param:
+                    if barre_fond.collidepoint(mouse_x, mouse_y):
+                        relative_x = mouse_x - barre_fond.x
+                        volume = max(0.0, min(1.0, relative_x / barre_fond.width))
+                        pygame.mixer.music.set_volume(volume)
+                    elif btn_retour.collidepoint(mouse_x, mouse_y):
+                        fenetre_param = False
+                        darken_overlay = False
+                    elif not rect_popup.collidepoint(mouse_x, mouse_y):
+                        fenetre_param = False
+                        darken_overlay = False
                 else:
                     if rect1.collidepoint(mouse_x, mouse_y):
-                        fenetre        = True
+                        fenetre = True
+                        darken_overlay = True
+                    elif rect3.collidepoint(mouse_x, mouse_y):
+                        fenetre_param = True
                         darken_overlay = True
                     elif rect4.collidepoint(mouse_x, mouse_y):
                         if confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
@@ -114,6 +131,11 @@ def main_menu():
         if fenetre:
             rect_popup, input_box2, input_box1, bouton_jouer = creer_party(
                 screen, WIDTH, HEIGHT, active1, active2, nom_partie, nom_joueur
+            )
+        
+        if fenetre_param:
+            rect_popup, barre_fond, btn_retour = afficher_parametres(
+                screen, WIDTH, HEIGHT, volume
             )
 
         pygame.display.flip()

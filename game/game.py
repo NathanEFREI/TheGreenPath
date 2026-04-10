@@ -4,7 +4,8 @@ from pygame.surface import Surface
 from personnage.joueur import Player
 from ui.dialogue import afficher_dialogue
 from constante import FPS
-
+from .epreuve_lumiere import EpreuveLumiere
+from .utils import draw_button, confirm_quit
 
 
 # Instancier la fenêtre de jeu
@@ -103,14 +104,38 @@ class Game(Fenetre):
 
         # État du dialogue (None = pas de dialogue, sinon tuple (texte, couleur))
         self.dialogue_actuel = None
+
+        self.salle_actuelle = "spawn"
+        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "provisoirebg.png")
+        self.bg_epreuve1 = pygame.image.load(image_path_epreuve1).convert()
+
+        self.fade_surface = pygame.Surface((self.WIDTH, self.HEIGHT))
+        self.fade_surface.fill((0,0,0))
+        self.fade_opacite = 0
+        self.faded_direction = 0
+
+        self.prochaine_salle_nom = ""
+        self.prochain_bg = None
+        self.prochaine_pos_x = 50        
         
+        self.font_epreuve = pygame.font.SysFont("Arial", 30, bold = True)
+        self.epreuve = EpreuveLumiere(self.screen, self.font_epreuve, self.WIDTH, self.HEIGHT)
         # Element a redimensionner
         self.elems = ["background"] # on mettra les plateformes et autres surfaces 
 
+    def transition_vers(self, nom_salle, image_bg, x_joueur=50):
+        """Cette méthode prépare les données pour le fondu"""
+        if self.faded_direction == 0: 
+            self.prochaine_salle_nom = nom_salle
+            self.prochain_bg = image_bg
+            self.prochaine_pos_x = x_joueur
+            self.faded_direction = 1
 
     def run(self):
         clock = pygame.time.Clock()
         while self.running:
+            #print(f"Sallle: {self.salle_actuelle} | Pos: {self.player.rect.right} | Goal: {self.WIDTH}")
+            #print(f"Direction fondu: {self.faded_direction} | Opacité: {self.fade_opacite}")
             # condition pour voir si le joueur ferme la fenêtre
             # print(self.WIDTH, self.HEIGHT) # debug temporaire
             for event in pygame.event.get():
@@ -126,6 +151,9 @@ class Game(Fenetre):
                     if event.key == pygame.K_e:
                         if self.dialogue_actuel:
                             self.dialogue_actuel = None  # Fermer le dialogue
+                        elif self.salle_actuelle == "lumiere" and not self.epreuve.active:
+                            self.epreuve.lancer()
+                            self.dialogue_actuel = ("Vite ! Eteins les lumières !", "orange")
                         else:
                             # Exemple : afficher un dialogue du joueur (bleu)
                             self.dialogue_actuel = (
@@ -136,9 +164,44 @@ class Game(Fenetre):
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False
 
+            if self.faded_direction == 1:
+                self.fade_opacite += 8
+                if self.fade_opacite >= 255:
+                    self.fade_opacite = 255
+
+                    self.salle_actuelle = self.prochaine_salle_nom
+                    self.background = pygame.transform.scale(self.prochain_bg, (self.WIDTH,self.HEIGHT))
+                    self.player.rect.left = self.prochaine_pos_x
+                    self.faded_direction = -1
+
+            elif self.faded_direction == -1:
+                self.fade_opacite -= 8
+                if self.fade_opacite <= 0:
+                    self.fade_opacite = 0
+                    self.faded_direction = 0
+
+            dt = clock.get_time() / 1000 
+            self.epreuve.update(self.player.rect, dt)
+
+            # Gestion de la fin de l'épreuve
+            if self.epreuve.termine:
+                if self.epreuve.reussite:
+                    self.dialogue_actuel = ("Gagné ! La ville dépense moins!", "green")
+                else:
+                    self.dialogue_actuel = ("Trop lent ! Réessaie de les éteindre.", "red")
+                self.epreuve.termine = False
+
+
+            if self.salle_actuelle == "spawn" and self.player.rect.right >= self.WIDTH:
+                self.transition_vers("lumiere", self.bg_epreuve1)
+
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
             # appeler le niveau: self.screen.blits() pour mettre les plateformes
+
+            #pour afficher les ampoules
+            self.epreuve.draw()
+
             # Afficher le joueur
             self.screen.blit(self.player.image, self.player.rect)
 
@@ -165,6 +228,10 @@ class Game(Fenetre):
             if self.dialogue_actuel:
                 texte, couleur = self.dialogue_actuel
                 afficher_dialogue(self.screen, texte, couleur)
+                
+            if self.fade_opacite > 0:
+                self.fade_surface.set_alpha(self.fade_opacite)
+                self.screen.blit(self.fade_surface, (0, 0))
 
             clock.tick(FPS)
             pygame.display.flip()
