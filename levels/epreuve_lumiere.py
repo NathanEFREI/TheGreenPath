@@ -18,8 +18,17 @@ class EpreuveLumiere:
         self.active = True
         self.termine = False
         self.temps_restant = 10.0
-        self.cibles = [pygame.Rect(random.randint(100, self.WIDTH-100), 
-                                   random.randint(100, self.HEIGHT-200), 40, 40) for _ in range(5)]
+        self.cibles = []
+        
+        screen_w, screen_h = self.screen.get_size()
+        
+        sol = screen_h - 260
+        cap_lumiere = sol - 150
+        
+        for i in range(5):
+            x = random.randint(100, screen_w - 100)
+            y = random.randint(int(cap_lumiere), int(sol))
+            self.cibles.append(pygame.Rect(x, y, 40, 40))
 
     def update(self, player_rect, dt):
         if not self.active: return

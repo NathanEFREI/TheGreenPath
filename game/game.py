@@ -106,8 +106,12 @@ class Game(Fenetre):
         self.dialogue_actuel = None
 
         self.salle_actuelle = "spawn"
-        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "provisoirebg.png")
-        self.bg_epreuve1 = pygame.image.load(image_path_epreuve1).convert()
+
+        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "epreuve_lumiere_bg.png")
+        self.bg_epreuve1_base = pygame.image.load(image_path_epreuve1).convert()
+        
+        # On agrandit un peu la hauteur pour ne pas avoir de bande noire en bas quand on remonte l'image
+        self.bg_epreuve1 = pygame.transform.scale(self.bg_epreuve1_base, (self.WIDTH, self.HEIGHT + 60))
 
         self.fade_surface = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.fade_surface.fill((0,0,0))
@@ -120,6 +124,28 @@ class Game(Fenetre):
         
         self.font_epreuve = pygame.font.SysFont("Arial", 30, bold = True)
         self.epreuve = EpreuveLumiere(self.screen, self.font_epreuve, self.WIDTH, self.HEIGHT)
+        path_gardien = os.path.join(base_path, "..", "assets", "gardien", "gardien-lumiere.png")
+        # On charge, on scale, et on crée le rectangle directement
+        self.gardien_img = pygame.image.load(path_gardien).convert_alpha()
+        self.gardien_img = pygame.transform.scale(self.gardien_img, (150, 150))
+        self.gardien_rect = self.gardien_img.get_rect()
+        
+        # On le centre
+        self.gardien_rect.centerx = self.WIDTH // 2
+        
+        # On le pose tout en bas de l'écran (comme ton perso dans l'autre salle)
+        self.gardien_rect.bottom = self.HEIGHT - 240
+
+        # Liste des répliques du Gardien
+        self.dialogues_gardien = [
+            "Je suis le gardien de la lumière, celui qui veille à l'énergie.",
+            "Éteindre la lumière quand on sort est un geste très important.",
+            "Produire de l'électricité pollue parfois la nature.",
+            "En éteignant, tu aides les animaux, les plantes et l'air !",
+            "Voici ton épreuve : éteins tout le plus vite possible. Prêt ?"
+        ]
+        self.indice_dialogue = -1
+
         # Element a redimensionner
         self.elems = ["background"] # on mettra les plateformes et autres surfaces 
 
@@ -134,8 +160,6 @@ class Game(Fenetre):
     def run(self):
         clock = pygame.time.Clock()
         while self.running:
-            #print(f"Sallle: {self.salle_actuelle} | Pos: {self.player.rect.right} | Goal: {self.WIDTH}")
-            #print(f"Direction fondu: {self.faded_direction} | Opacité: {self.fade_opacite}")
             # condition pour voir si le joueur ferme la fenêtre
             # print(self.WIDTH, self.HEIGHT) # debug temporaire
             for event in pygame.event.get():
@@ -149,11 +173,18 @@ class Game(Fenetre):
 
                     # Touche E : afficher/fermer un dialogue (exemple)
                     if event.key == pygame.K_e:
-                        if self.dialogue_actuel:
-                            self.dialogue_actuel = None  # Fermer le dialogue
-                        elif self.salle_actuelle == "lumiere" and not self.epreuve.active:
-                            self.epreuve.lancer()
-                            self.dialogue_actuel = ("Vite ! Eteins les lumières !", "orange")
+                        if self.salle_actuelle == "lumiere" and not self.epreuve.active:
+                            
+                            if self.indice_dialogue == -1:
+                                self.indice_dialogue = 0
+                            
+                            elif self.indice_dialogue < len(self.dialogues_gardien) - 1:
+                                self.indice_dialogue += 1
+                            
+                            else:
+                                self.indice_dialogue = -1 
+                                self.dialogue_actuel = None
+                                self.epreuve.lancer()
                        
 
                 elif event.type == pygame.KEYUP:
@@ -194,8 +225,24 @@ class Game(Fenetre):
             self.screen.blit(self.background, (0, 0))
             # appeler le niveau: self.screen.blits() pour mettre les plateformes
 
-            #pour afficher les ampoules
+
+            if self.salle_actuelle == "lumiere":
+                self.screen.blit(self.background, (0, - 60))
+                self.screen.blit(self.gardien_img, self.gardien_rect)
+            else:
+                self.screen.blit(self.background, (0, 0))
+
             self.epreuve.draw()
+            self.screen.blit(self.player.image, self.player.rect)
+
+            if self.indice_dialogue != -1:
+                self.dialogue_actuel = (self.dialogues_gardien[self.indice_dialogue], "black")
+
+            if self.dialogue_actuel:
+                texte, couleur = self.dialogue_actuel
+                afficher_dialogue(self.screen, texte, couleur)
+
+
 
             # Afficher le joueur
             self.screen.blit(self.player.image, self.player.rect)
