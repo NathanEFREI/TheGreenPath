@@ -1,5 +1,5 @@
 # En haut de menu.py, remplace l'import existant par :
-from game.menus.creer_partie import creer_party
+from menus.creer_partie import creer_party
 from constante import FPS
 from game.cinematique import SceneCinematique
 from game.game import Game

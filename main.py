@@ -1,6 +1,6 @@
 # main.py (à la racine)
 #from codecarbon import EmissionsTracker
-from game.menu import main_menu
+from menus.menu import main_menu
 import sys
 import os
 

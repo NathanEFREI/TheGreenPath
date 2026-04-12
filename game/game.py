@@ -4,7 +4,7 @@ from pygame.surface import Surface
 from personnage.joueur import Player
 from ui.dialogue import afficher_dialogue
 from constante import FPS
-from .epreuve_lumiere import EpreuveLumiere
+from levels.epreuve_lumiere import EpreuveLumiere
 from .utils import draw_button, confirm_quit
 
 
@@ -98,7 +98,7 @@ class Game(Fenetre):
 
         self.player = Player(self.WIDTH, self.HEIGHT)  # spawn player avec taille de fenêtre
         self.player.actu(self.WIDTH, self.HEIGHT)
-        self.pressed = {} # ? pk faire ??
+        self.pressed = {} 
  
         self.move: bool
 
