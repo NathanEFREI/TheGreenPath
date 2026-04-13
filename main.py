@@ -1,4 +1,3 @@
-# main.py (à la racine)
 #from codecarbon import EmissionsTracker
 from menus.menu import main_menu
 import sys

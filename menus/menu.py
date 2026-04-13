@@ -1,4 +1,6 @@
-# En haut de menu.py, remplace l'import existant par :
+import json
+import os
+
 from menus.creer_partie import creer_party
 from constante import FPS
 from game.cinematique import SceneCinematique
@@ -6,6 +8,30 @@ from game.game import Game
 from game.utils import draw_hover_button, confirm_quit
 from game.parametre import afficher_parametres
 import pygame
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SETTINGS_PATH = os.path.join(BASE_DIR, "settings.json")
+DEFAULT_VOLUME = 0.4
+
+
+def load_volume():
+    try:
+        with open(SETTINGS_PATH, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        if isinstance(data, dict):
+            return float(data.get("volume", DEFAULT_VOLUME))
+    except Exception:
+        pass
+    return DEFAULT_VOLUME
+
+
+def save_volume(volume):
+    try:
+        with open(SETTINGS_PATH, "w", encoding="utf-8") as file:
+            json.dump({"volume": float(volume)}, file, indent=4)
+    except Exception:
+        pass
+
 
 def main_menu():
     pygame.init()
@@ -28,7 +54,7 @@ def main_menu():
     nom_partie   = ""
     nom_joueur   = ""
     fenetre_param = False
-    volume = 0.4
+    volume = load_volume()
 
     while running:
         pygame.mouse.set_cursor(*pygame.cursors.diamond)
@@ -90,6 +116,7 @@ def main_menu():
                         relative_x = mouse_x - barre_fond.x
                         volume = max(0.0, min(1.0, relative_x / barre_fond.width))
                         pygame.mixer.music.set_volume(volume)
+                        save_volume(volume)
                     elif btn_retour.collidepoint(mouse_x, mouse_y):
                         fenetre_param = False
                         darken_overlay = False
@@ -142,7 +169,7 @@ def main_menu():
         clock.tick(FPS)
 
     # --- Lancement de la cinématique ---
-    game = Game()
+    game = Game(volume=volume)
 
     def lancer_jeu():
         game.run()

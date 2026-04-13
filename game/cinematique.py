@@ -74,7 +74,10 @@ class SceneCinematique():
         except Exception:
             pass
 
-        # Fade écran
+        # Fade écran — on remplit l'écran en noir dès le départ pour masquer
+        # tout arrière-plan résiduel (ex: fond vert du menu)
+        self.screen.fill((0, 0, 0))
+        pygame.display.flip()
         self.fade_surface   = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.fade_surface.fill((0, 0, 0))
         self.fade_alpha     = 255
@@ -128,6 +131,11 @@ class SceneCinematique():
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type != pygame.KEYDOWN:
+            return
+
+        if event.key == pygame.K_p:
+            pygame.mixer.music.fadeout(2000)
+            self.terminee = True
             return
 
         if event.key in (pygame.K_SPACE, pygame.K_RETURN):
