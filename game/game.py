@@ -297,6 +297,7 @@ class Game(Fenetre):
                             self.dialogue_actuel = ("Bravo ! C'est le bon tri.", "green")
                             self.poubelle_concernee.reussie = True 
                             if all(p.reussie for p in self.poubelles):
+                                self.geste_count = min(self.geste_max, self.geste_count + 1)
                                 self.epreuve_tri_terminee = True
                                 self.dialogue_actuel = ("Super ! Ton implication est très utile pour Nitidopolis ! ", "green")
                         else:
