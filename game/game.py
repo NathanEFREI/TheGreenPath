@@ -5,6 +5,8 @@ from personnage.joueur import Player
 from ui.dialogue import afficher_dialogue
 from constante import FPS
 from levels.epreuve_lumiere import EpreuveLumiere
+from levels.epreuve_poubelle import Poubelle
+from levels.menu_tri_poubelle import MenuTri
 from .utils import draw_button, confirm_quit
 
 
@@ -106,12 +108,18 @@ class Game(Fenetre):
         self.dialogue_actuel = None
 
         self.salle_actuelle = "spawn"
+        self.epreuve_lumiere_terminee = False
 
         image_path_epreuve1 = os.path.join(base_path, "..", "assets", "epreuve_lumiere_bg.png")
         self.bg_epreuve1_base = pygame.image.load(image_path_epreuve1).convert()
         
         # On agrandit un peu la hauteur pour ne pas avoir de bande noire en bas quand on remonte l'image
         self.bg_epreuve1 = pygame.transform.scale(self.bg_epreuve1_base, (self.WIDTH, self.HEIGHT + 60))
+
+        image_path_epreuve2 = os.path.join(base_path, "..", "assets", "provisoirebg.png")
+        self.bg_epreuve2_base = pygame.image.load(image_path_epreuve2).convert()
+        self.bg_epreuve2 = pygame.transform.scale(self.bg_epreuve2_base, (self.WIDTH, self.HEIGHT))
+        
 
         self.fade_surface = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.fade_surface.fill((0,0,0))
@@ -122,19 +130,41 @@ class Game(Fenetre):
         self.prochain_bg = None
         self.prochaine_pos_x = 50        
         
+
         self.font_epreuve = pygame.font.SysFont("Arial", 30, bold = True)
         self.epreuve = EpreuveLumiere(self.screen, self.font_epreuve, self.WIDTH, self.HEIGHT)
-        path_gardien = os.path.join(base_path, "..", "assets", "gardien", "gardien-lumiere.png")
-        # On charge, on scale, et on crée le rectangle directement
-        self.gardien_img = pygame.image.load(path_gardien).convert_alpha()
+
+        #gardien epreuve lumiere
+        path_gardien_lumiere = os.path.join(base_path, "..", "assets", "gardien", "gardien-lumiere.png")
+        self.gardien_img = pygame.image.load(path_gardien_lumiere).convert_alpha()
         self.gardien_img = pygame.transform.scale(self.gardien_img, (360, 160))
         self.gardien_rect = self.gardien_img.get_rect()
-        
-        # On le centre
         self.gardien_rect.centerx = self.WIDTH // 2
-        
-        # On le pose tout en bas de l'écran (comme ton perso dans l'autre salle)
         self.gardien_rect.bottom = self.HEIGHT - 240
+        
+        #gardien epreuve recyclage
+        path_gardien_tri = os.path.join(base_path, "..", "assets", "gardien", "gardien-recyclager.png")
+        self.gardien_tri_img = pygame.image.load(path_gardien_tri).convert_alpha()
+        self.gardien_tri_img = pygame.transform.scale(self.gardien_tri_img, (360, 160))
+        self.gardien_tri_rect = self.gardien_tri_img.get_rect()
+        
+        self.gardien_tri_rect.left = 50
+        self.gardien_tri_rect.bottom = self.HEIGHT - 240
+
+        self.dialogues_gardien_tri = [
+            "Je suis le gardien du recyclage, celui qui veille à ce que chaque déchet trouve sa place.",
+            "Rien ne doit être perdu, car même ce que l'on jette peut encore servir.",
+            "Les déchets mal triés polluent la nature, mais recyclés, ils deviennent de nouvelles ressources.",
+            "Voici ton épreuve : ramasse les déchets et place-les dans la bonne poubelle.",
+            "Chaque erreur de tri peut nuire à l'équilibre de la nature ! Prêt ?"
+        ]
+        self.indice_dialogue_tri = -1
+        self.tri_autorise = False  
+
+        self.epreuve_tri_terminee = False 
+        self.tri_autorise = False
+
+
 
         # Liste des répliques du Gardien
         self.dialogues_gardien = [
@@ -148,6 +178,29 @@ class Game(Fenetre):
 
         # Element a redimensionner
         self.elems = ["background"] # on mettra les plateformes et autres surfaces 
+
+
+        path_poubelles = os.path.join(base_path, "..", "assets")
+
+        img_p_jaune = pygame.transform.scale(pygame.image.load(os.path.join(path_poubelles, "poubelle_jaune.png")).convert_alpha(), (80,100))
+        img_p_marron = pygame.transform.scale(pygame.image.load(os.path.join(path_poubelles, "poubelle_marron.png")).convert_alpha(), (80,100))
+        img_p_verte = pygame.transform.scale(pygame.image.load(os.path.join(path_poubelles, "poubelle_verte.png")).convert_alpha(), (80,100))
+
+        sol_y = self.HEIGHT - 240
+        self.poubelles = [
+            Poubelle(self.WIDTH // 4, sol_y, img_p_jaune, "yellow", "recyclable"),
+            Poubelle(self.WIDTH // 2, sol_y, img_p_marron, "brown", "ordure"),
+            Poubelle(3 * self.WIDTH // 4, sol_y,img_p_verte,  "green", "verre")
+        ]
+
+        path_dechets = os.path.join(base_path, "..", "assets")
+        self.img_carton = pygame.transform.scale(pygame.image.load(os.path.join(path_dechets, "carton.png")).convert_alpha(), (50, 50))
+        self.img_pomme = pygame.transform.scale(pygame.image.load(os.path.join(path_dechets, "pomme.png")).convert_alpha(), (50, 50))
+        self.img_verre = pygame.transform.scale(pygame.image.load(os.path.join(path_dechets, "verre.png")).convert_alpha(), (50, 50))
+        
+        # Variable pour stocker le menu ouvert
+        self.menu_tri_actuel = None
+        self.poubelle_concernee = None
 
     def transition_vers(self, nom_salle, image_bg, x_joueur=50):
         """Cette méthode prépare les données pour le fondu"""
@@ -171,24 +224,70 @@ class Game(Fenetre):
                 if event.type == pygame.KEYDOWN:
                     self.pressed[event.key] = True # ?
 
-                    # Touche E : afficher/fermer un dialogue (exemple)
+                
                     if event.key == pygame.K_e:
+                        # --- LOGIQUE SALLE LUMIÈRE ---
                         if self.salle_actuelle == "lumiere" and not self.epreuve.active:
-                            
-                            if self.indice_dialogue == -1:
-                                self.indice_dialogue = 0
-                            
-                            elif self.indice_dialogue < len(self.dialogues_gardien) - 1:
-                                self.indice_dialogue += 1
-                            
+                            if self.epreuve_lumiere_terminee:
+                                if self.dialogue_actuel:
+                                    self.dialogue_actuel = None
+                                else:
+                                    self.dialogue_actuel = ("Merci encore d'avoir éteint les lumières!", "black")
+                                self.indice_dialogue = -1
                             else:
-                                self.indice_dialogue = -1 
-                                self.dialogue_actuel = None
-                                self.epreuve.lancer()
-                       
+                                if self.indice_dialogue == -1:
+                                    self.indice_dialogue = 0
+                                elif self.indice_dialogue < len(self.dialogues_gardien) - 1:
+                                    self.indice_dialogue += 1
+                                else:
+                                    self.indice_dialogue = -1 
+                                    self.dialogue_actuel = None
+                                    self.epreuve.lancer()
 
+                        elif self.salle_actuelle == "tri_dechets":
+                            # Cas 1 : L'épreuve est terminée, on affiche juste un message de remerciement
+                            if self.epreuve_tri_terminee:
+                                if self.dialogue_actuel:
+                                    self.dialogue_actuel = None
+                                else:
+                                    self.dialogue_actuel = ("Merci encore pour ton aide ! Nitidopolis respire mieux grâce à toi.", "black")
+
+                            elif not self.tri_autorise:
+                                if self.indice_dialogue_tri < len(self.dialogues_gardien_tri) - 1:
+                                    self.indice_dialogue_tri += 1
+                                    self.dialogue_actuel = (self.dialogues_gardien_tri[self.indice_dialogue_tri], "black")
+                                else:
+                                    self.indice_dialogue_tri = -1
+                                    self.dialogue_actuel = None
+                                    self.tri_autorise = True # Maintenant on peut trier !
+
+                            else: 
+                                if self.dialogue_actuel:
+                                    self.dialogue_actuel = None
+                                else:
+                                    for p in self.poubelles:
+                                        if self.player.rect.colliderect(p.rect):
+                                            if hasattr(p, 'reussie') and p.reussie:
+                                                self.dialogue_actuel = ("Cette poubelle est déjà bien triée !", "black")
+                                            else:
+                                                self.ouvrir_menu_tri(p)
+                                            break # On arrête la boucle dès qu'on a trouvé la poubelle touchée
+                                        
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False
+
+                elif event.type == pygame.MOUSEBUTTONDOWN and self.menu_tri_actuel:
+                    choix = self.menu_tri_actuel.check_click(event.pos)
+                    if choix:
+                        if choix == self.poubelle_concernee.dechet_attendu:
+                            self.dialogue_actuel = ("Bravo ! C'est le bon tri.", "green")
+                            self.poubelle_concernee.reussie = True 
+                            if all(p.reussie for p in self.poubelles):
+                                self.epreuve_tri_terminee = True
+                                self.dialogue_actuel = ("Super ! Ton implication est très utile pour Nitidopolis ! ", "green")
+                        else:
+                            self.dialogue_actuel = ("Aïe... ce déchet va ailleurs.", "red")
+                        self.menu_tri_actuel = None #Ferme le menu                 
 
             if self.faded_direction == 1:
                 self.fade_opacite += 8
@@ -213,6 +312,7 @@ class Game(Fenetre):
             if self.epreuve.termine:
                 if self.epreuve.reussite:
                     self.dialogue_actuel = ("Gagné ! La ville dépense moins!", "green")
+                    self.epreuve_lumiere_terminee = True
                 else:
                     self.dialogue_actuel = ("Trop lent ! Réessaie de les éteindre.", "red")
                 self.epreuve.termine = False
@@ -221,27 +321,36 @@ class Game(Fenetre):
             if self.salle_actuelle == "spawn" and self.player.rect.right >= self.WIDTH:
                 self.transition_vers("lumiere", self.bg_epreuve1)
 
+            if self.salle_actuelle == "lumiere" and self.player.rect.right >= self.WIDTH and self.epreuve.reussite:
+                self.transition_vers("tri_dechets", self.bg_epreuve2)
+
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
             # appeler le niveau: self.screen.blits() pour mettre les plateformes
 
 
+  
             if self.salle_actuelle == "lumiere":
-                self.screen.blit(self.background, (0, - 60))
+                self.screen.blit(self.background, (0, -60)) # On remonte un peu pour le décor
                 self.screen.blit(self.gardien_img, self.gardien_rect)
-            else:
+                self.epreuve.draw() # Ampoules uniquement ici
+                
+            elif self.salle_actuelle == "tri_dechets":
+                self.screen.blit(self.background, (0, 0))
+                self.screen.blit(self.gardien_tri_img, self.gardien_tri_rect)
+                for p in self.poubelles:
+                    p.draw(self.screen) # Poubelles uniquement ici
+
+            else: #Spawn
                 self.screen.blit(self.background, (0, 0))
 
-            self.epreuve.draw()
-            self.screen.blit(self.player.image, self.player.rect)
+            # --- 2. DESSIN DES ENTITÉS ET INTERFACES ---
+            if self.menu_tri_actuel:
+                self.menu_tri_actuel.draw(self.screen)
 
+            #Gestion auto du texte de dialogue du gardien
             if self.indice_dialogue != -1:
                 self.dialogue_actuel = (self.dialogues_gardien[self.indice_dialogue], "black")
-
-            if self.dialogue_actuel:
-                texte, couleur = self.dialogue_actuel
-                afficher_dialogue(self.screen, texte, couleur)
-
 
 
             # Afficher le joueur
@@ -280,4 +389,12 @@ class Game(Fenetre):
 
         pygame.quit()
 
-
+    def ouvrir_menu_tri(self, poubelle):
+        self.poubelle_concernee = poubelle
+        # Exemple : La poubelle jaune propose Carton vs Pomme
+        if poubelle.type == "yellow":
+            self.menu_tri_actuel = MenuTri(poubelle.rect, self.img_carton, self.img_pomme, "recyclable", "organique")
+        if poubelle.type == "brown":
+            self.menu_tri_actuel = MenuTri(poubelle.rect, self.img_pomme, self.img_verre, "ordure", "verre")
+        if poubelle.type == "green":
+            self.menu_tri_actuel = MenuTri(poubelle.rect, self.img_verre, self.img_carton, "verre", "recyclable")
