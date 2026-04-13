@@ -14,13 +14,11 @@ from .utils import draw_button, confirm_quit
 class Fenetre:
     def __init__(self, caption: str):
         pygame.init()
-        info = pygame.display.Info()
 
-        # Récupérer la résolution de l'écran
-        self.WIDTH, self.HEIGHT = info.current_w, info.current_h
-
-        # Créer la fenêtre avec bordure
-        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT), pygame.FULLSCREEN)
+        # Créer la fenêtre fullscreen d'abord, PUIS lire les vraies dimensions
+        # (sur Windows, Info() avant set_mode peut inclure la barre des tâches)
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.WIDTH, self.HEIGHT = self.screen.get_size()
         self.fullscreen = True
         self.elems = None # Pour éviter d'avoir une erreur quand on appelle resize sans avoir def self.elems dans la sous classe
 
@@ -65,24 +63,22 @@ class Fenetre:
         Permet de passer du fullscreen en mode resize et inversement
         """
         if self.fullscreen:
-            info = pygame.display.Info()
-            self.WIDTH, self.HEIGHT = info.current_w, info.current_h
-            mode = pygame.FULLSCREEN
-            dim = (self.WIDTH, self.HEIGHT)
+            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            self.WIDTH, self.HEIGHT = self.screen.get_size()
         else:
-            mode = pygame.RESIZABLE
             dim = (int(self.WIDTH * 0.98), int(self.HEIGHT * 0.98))
-        self.screen = pygame.display.set_mode(dim, mode)
+            self.screen = pygame.display.set_mode(dim, pygame.RESIZABLE)
         if self.elems is not None:
             self.resize_obj()
 
 
 
 class Game(Fenetre):
-    def __init__(self):
+    def __init__(self, volume: float = 0.4):
         # permet d'hériter de la classe parent (fait le init du parent)
         super().__init__("The Green Path")
         pygame.mixer.init()
+        self.volume = volume
         # Chemin absolu vers le dossier du fichier .py
         base_path = os.path.dirname(__file__)
         image_path = os.path.join(base_path, "..", "assets", "ville1.png")
@@ -90,7 +86,7 @@ class Game(Fenetre):
         # Musique du jeu
         music_path = os.path.join(base_path, "..", "assets", "Sound", "Lobby Time.mp3")
         pygame.mixer.music.load(music_path)
-        pygame.mixer.music.set_volume(0.2)
+        pygame.mixer.music.set_volume(self.volume)
         pygame.mixer.music.play(-1)
 
         # charger le background
@@ -100,8 +96,11 @@ class Game(Fenetre):
 
         self.player = Player(self.WIDTH, self.HEIGHT)  # spawn player avec taille de fenêtre
         self.player.actu(self.WIDTH, self.HEIGHT)
-        self.pressed = {} 
- 
+        self.pressed = {}
+        self.geste_count = 0
+        self.geste_max = 3
+        self.geste_icon = None
+
         self.move: bool
 
         # État du dialogue (None = pas de dialogue, sinon tuple (texte, couleur))
@@ -110,7 +109,7 @@ class Game(Fenetre):
         self.salle_actuelle = "spawn"
         self.epreuve_lumiere_terminee = False
 
-        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "epreuve_lumiere_bg.png")
+        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "epreuves/epreuve_lumiere_bg.png")
         self.bg_epreuve1_base = pygame.image.load(image_path_epreuve1).convert()
         
         # On agrandit un peu la hauteur pour ne pas avoir de bande noire en bas quand on remonte l'image
@@ -125,6 +124,19 @@ class Game(Fenetre):
         self.fade_surface.fill((0,0,0))
         self.fade_opacite = 0
         self.faded_direction = 0
+
+        # Compteur de gestes écologiques
+        try:
+            path_geste = os.path.join(base_path, "..", "assets", "geste.png")
+            self.geste_icon = pygame.image.load(path_geste).convert_alpha()
+            icon_size = max(56, min(96, self.HEIGHT // 18))
+            w, h = self.geste_icon.get_size()
+            ratio = w / h
+            new_h = icon_size
+            new_w = int(new_h * ratio)
+            self.geste_icon = pygame.transform.smoothscale(self.geste_icon, (new_w, new_h))
+        except Exception:
+            self.geste_icon = None
 
         self.prochaine_salle_nom = ""
         self.prochain_bg = None
@@ -168,11 +180,11 @@ class Game(Fenetre):
 
         # Liste des répliques du Gardien
         self.dialogues_gardien = [
-            "Je suis le gardien de la lumière, celui qui veille à l'énergie.",
-            "Éteindre la lumière quand on sort est un geste très important.",
-            "Produire de l'électricité pollue parfois la nature.",
-            "En éteignant, tu aides les animaux, les plantes et l'air !",
-            "Voici ton épreuve : éteins tout le plus vite possible. Prêt ?"
+            "Je suis le gardien de la lumière, celui qui veille à ce que l’énergie ne soit jamais gaspillée. Je parcours les maisons et les villes pour m’assurer que chaque lumière est utilisée avec sagesse. Mais sais-tu que toi aussi, tu peux m’aider à protéger notre planète ?",
+            "Quand tu quittes une pièce, éteindre la lumière peut sembler être un tout petit geste… pourtant, il est très important. Produire de l’électricité demande beaucoup d’énergie, et parfois cela pollue l’air et abîme la nature.",
+            "En laissant une lumière allumée pour rien, on gaspille cette énergie. Mais en l’éteignant, tu aides à protéger les animaux, les plantes et même l’air que nous respirons.",
+            "Chaque petit geste compte. Alors souviens-toi : quand tu pars d’une pièce, pense à éteindre la lumière. C’est ainsi que, petit à petit, tu deviens toi aussi un véritable gardien de la nature.",
+            "Pour prouver que tu es prêt à devenir un protecteur de ton environnement, voici ton épreuve : des lumières vont s’allumer autour de toi. Tu devras toutes les éteindre le plus vite possible, avant que le temps ne soit écoulé. Sois rapide et attentif !"
         ]
         self.indice_dialogue = -1
 
@@ -203,7 +215,9 @@ class Game(Fenetre):
         self.poubelle_concernee = None
 
     def transition_vers(self, nom_salle, image_bg, x_joueur=50):
-        """Cette méthode prépare les données pour le fondu"""
+        """
+        Cette méthode prépare les données pour le fondu
+        """
         if self.faded_direction == 0: 
             self.prochaine_salle_nom = nom_salle
             self.prochain_bg = image_bg
@@ -311,7 +325,8 @@ class Game(Fenetre):
             # Gestion de la fin de l'épreuve
             if self.epreuve.termine:
                 if self.epreuve.reussite:
-                    self.dialogue_actuel = ("Gagné ! La ville dépense moins!", "green")
+                    self.geste_count = min(self.geste_max, self.geste_count + 1)
+                    self.dialogue_actuel = ("Bravo ! Toutes les lumières sont éteintes, tu as économisé de l’énergie et protégé la planète !", "green")
                     self.epreuve_lumiere_terminee = True
                 else:
                     self.dialogue_actuel = ("Trop lent ! Réessaie de les éteindre.", "red")
@@ -343,6 +358,15 @@ class Game(Fenetre):
 
             else: #Spawn
                 self.screen.blit(self.background, (0, 0))
+
+            # Afficher le compteur de gestes écologiques
+            if self.geste_icon is not None:
+                hud_x, hud_y = 10, 10
+                self.screen.blit(self.geste_icon, (hud_x, hud_y))
+                geste_text = self.font_epreuve.render(f"{self.geste_count}/{self.geste_max}", True, "white")
+                text_x = hud_x + self.geste_icon.get_width() + 6
+                geste_rect = geste_text.get_rect(midleft=(text_x, hud_y + self.geste_icon.get_height() // 2))
+                self.screen.blit(geste_text, geste_rect)
 
             # --- 2. DESSIN DES ENTITÉS ET INTERFACES ---
             if self.menu_tri_actuel:

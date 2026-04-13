@@ -1,4 +1,6 @@
-# En haut de menu.py, remplace l'import existant par :
+import json
+import os
+
 from menus.creer_partie import creer_party
 from constante import FPS
 from game.cinematique import SceneCinematique
@@ -7,11 +9,38 @@ from game.utils import draw_hover_button, confirm_quit
 from game.parametre import afficher_parametres
 import pygame
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SETTINGS_PATH = os.path.join(BASE_DIR, "settings.json")
+DEFAULT_VOLUME = 0.4
+
+
+def load_volume():
+    try:
+        with open(SETTINGS_PATH, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        if isinstance(data, dict):
+            return float(data.get("volume", DEFAULT_VOLUME))
+    except Exception:
+        pass
+    return DEFAULT_VOLUME
+
+
+def save_volume(volume):
+    try:
+        with open(SETTINGS_PATH, "w", encoding="utf-8") as file:
+            json.dump({"volume": float(volume)}, file, indent=4)
+    except Exception:
+        pass
+
+
 def main_menu():
     pygame.init()
     info = pygame.display.Info()
     WIDTH, HEIGHT = info.current_w, info.current_h
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+    img_menu_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "img_menu.png")
+    img_menu_base = pygame.image.load(img_menu_path).convert()
+    img_menu = pygame.transform.scale(img_menu_base, (WIDTH, HEIGHT))
     running = True
     clock = pygame.time.Clock()
 
@@ -28,7 +57,7 @@ def main_menu():
     nom_partie   = ""
     nom_joueur   = ""
     fenetre_param = False
-    volume = 0.4
+    volume = load_volume()
 
     while running:
         pygame.mouse.set_cursor(*pygame.cursors.diamond)
@@ -70,6 +99,12 @@ def main_menu():
                         elif active2 and len(nom_joueur) < 20:
                             nom_joueur += event.unicode
 
+            if event.type == pygame.VIDEORESIZE:
+                WIDTH, HEIGHT = event.w, event.h
+                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                img_menu = pygame.transform.scale(img_menu_base, (WIDTH, HEIGHT))
+                pos_x = (WIDTH // 2) - ((WIDTH / 2.5) / 2)
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if fenetre:
                     if input_box1.collidepoint(mouse_x, mouse_y):
@@ -90,6 +125,7 @@ def main_menu():
                         relative_x = mouse_x - barre_fond.x
                         volume = max(0.0, min(1.0, relative_x / barre_fond.width))
                         pygame.mixer.music.set_volume(volume)
+                        save_volume(volume)
                     elif btn_retour.collidepoint(mouse_x, mouse_y):
                         fenetre_param = False
                         darken_overlay = False
@@ -109,7 +145,7 @@ def main_menu():
                             cine.terminee = True
 
         # --- Dessin ---
-        screen.fill("green")
+        screen.blit(img_menu, (0, 0))
         rect1 = draw_hover_button(pos_x, HEIGHT * 0.2, WIDTH / 2.5, HEIGHT / 6,
                                   "orange", "Créer une partie", font_bouton, screen, "darkorchid1")
         rect2 = draw_hover_button(pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6,
@@ -142,7 +178,7 @@ def main_menu():
         clock.tick(FPS)
 
     # --- Lancement de la cinématique ---
-    game = Game()
+    game = Game(volume=volume)
 
     def lancer_jeu():
         game.run()
