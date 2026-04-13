@@ -127,7 +127,7 @@ class Game(Fenetre):
         path_gardien = os.path.join(base_path, "..", "assets", "gardien", "gardien-lumiere.png")
         # On charge, on scale, et on crée le rectangle directement
         self.gardien_img = pygame.image.load(path_gardien).convert_alpha()
-        self.gardien_img = pygame.transform.scale(self.gardien_img, (150, 150))
+        self.gardien_img = pygame.transform.scale(self.gardien_img, (360, 160))
         self.gardien_rect = self.gardien_img.get_rect()
         
         # On le centre
