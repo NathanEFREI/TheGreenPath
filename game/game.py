@@ -1,6 +1,5 @@
 import os
 import pygame
-from pygame.examples.scrap_clipboard import screen
 from pygame.surface import Surface
 from personnage.joueur import Player
 from ui.dialogue import afficher_dialogue
