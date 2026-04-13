@@ -115,7 +115,7 @@ class Game(Fenetre):
         # On agrandit un peu la hauteur pour ne pas avoir de bande noire en bas quand on remonte l'image
         self.bg_epreuve1 = pygame.transform.scale(self.bg_epreuve1_base, (self.WIDTH, self.HEIGHT + 60))
 
-        image_path_epreuve2 = os.path.join(base_path, "..", "assets", "provisoirebg.png")
+        image_path_epreuve2 = os.path.join(base_path, "..", "assets", "epreuves", "epreuve_recyclage.png")
         self.bg_epreuve2_base = pygame.image.load(image_path_epreuve2).convert()
         self.bg_epreuve2 = pygame.transform.scale(self.bg_epreuve2_base, (self.WIDTH, self.HEIGHT))
         
