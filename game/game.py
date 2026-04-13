@@ -1,5 +1,6 @@
 import os
 import pygame
+from pygame.examples.scrap_clipboard import screen
 from pygame.surface import Surface
 from personnage.joueur import Player
 from ui.dialogue import afficher_dialogue
@@ -118,7 +119,10 @@ class Game(Fenetre):
         image_path_epreuve2 = os.path.join(base_path, "..", "assets", "epreuves", "epreuve_recyclage.png")
         self.bg_epreuve2_base = pygame.image.load(image_path_epreuve2).convert()
         self.bg_epreuve2 = pygame.transform.scale(self.bg_epreuve2_base, (self.WIDTH, self.HEIGHT))
-        
+
+        image_path_epreuve3 = os.path.join(base_path, "..", "assets", "ville1.png")
+        self.bg_epreuve3_base = pygame.image.load(image_path_epreuve3).convert()
+        self.bg_epreuve3 = pygame.transform.scale(self.bg_epreuve3_base, (self.WIDTH, self.HEIGHT))
 
         self.fade_surface = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.fade_surface.fill((0,0,0))
@@ -395,6 +399,8 @@ class Game(Fenetre):
 
             if self.salle_actuelle == "lumiere" and self.player.rect.right >= self.WIDTH and self.epreuve.reussite:
                 self.transition_vers("tri_dechets", self.bg_epreuve2)
+            if self.salle_actuelle == "tri_dechets" and self.player.rect.right >= self.WIDTH and self.epreuve_tri_terminee:
+                self.transition_vers("tri_poubelle",self.bg_epreuve3)
 
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
@@ -412,6 +418,11 @@ class Game(Fenetre):
                 self.screen.blit(self.gardien_tri_img, self.gardien_tri_rect)
                 for p in self.poubelles:
                     p.draw(self.screen) # Poubelles uniquement ici
+            elif self.salle_actuelle == "tri_poubelle":
+                self.screen.blit(self.background, (0, 0))
+                from lvl.lvl_recyclage import LvlRecyclage
+                tri_poubelle = LvlRecyclage()
+                tri_poubelle.run()
 
             else: #Spawn
                 self.screen.blit(self.background, (0, 0))
