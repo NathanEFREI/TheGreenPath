@@ -106,7 +106,7 @@ class Game(Fenetre):
 
         self.salle_actuelle = "spawn"
 
-        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "epreuve_lumiere_bg.png")
+        image_path_epreuve1 = os.path.join(base_path, "..", "assets", "epreuves/epreuve_lumiere_bg.png")
         self.bg_epreuve1_base = pygame.image.load(image_path_epreuve1).convert()
         
         # On agrandit un peu la hauteur pour ne pas avoir de bande noire en bas quand on remonte l'image

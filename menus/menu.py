@@ -38,6 +38,9 @@ def main_menu():
     info = pygame.display.Info()
     WIDTH, HEIGHT = info.current_w, info.current_h
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+    img_menu_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "img_menu.png")
+    img_menu_base = pygame.image.load(img_menu_path).convert()
+    img_menu = pygame.transform.scale(img_menu_base, (WIDTH, HEIGHT))
     running = True
     clock = pygame.time.Clock()
 
@@ -96,6 +99,12 @@ def main_menu():
                         elif active2 and len(nom_joueur) < 20:
                             nom_joueur += event.unicode
 
+            if event.type == pygame.VIDEORESIZE:
+                WIDTH, HEIGHT = event.w, event.h
+                screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                img_menu = pygame.transform.scale(img_menu_base, (WIDTH, HEIGHT))
+                pos_x = (WIDTH // 2) - ((WIDTH / 2.5) / 2)
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if fenetre:
                     if input_box1.collidepoint(mouse_x, mouse_y):
@@ -136,7 +145,7 @@ def main_menu():
                             cine.terminee = True
 
         # --- Dessin ---
-        screen.fill("green")
+        screen.blit(img_menu, (0, 0))
         rect1 = draw_hover_button(pos_x, HEIGHT * 0.2, WIDTH / 2.5, HEIGHT / 6,
                                   "orange", "Créer une partie", font_bouton, screen, "darkorchid1")
         rect2 = draw_hover_button(pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6,
