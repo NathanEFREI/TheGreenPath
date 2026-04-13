@@ -148,20 +148,13 @@ class Game(Fenetre):
 
         #gardien epreuve lumiere
         path_gardien_lumiere = os.path.join(base_path, "..", "assets", "gardien", "gardien-lumiere.png")
-        self.gardien_img = pygame.image.load(path_gardien_lumiere).convert_alpha()
-        self.gardien_img = pygame.transform.scale(self.gardien_img, (360, 160))
+        self.gardien_img_base = pygame.image.load(path_gardien_lumiere).convert_alpha()
+        self.gardien_tri_img_base = pygame.image.load(os.path.join(base_path, "..", "assets", "gardien", "gardien-recyclager.png")).convert_alpha()
+        self.gardien_img = self._scale_gardien(self.gardien_img_base)
+        self.gardien_tri_img = self._scale_gardien(self.gardien_tri_img_base)
         self.gardien_rect = self.gardien_img.get_rect()
-        self.gardien_rect.centerx = self.WIDTH // 2
-        self.gardien_rect.bottom = self.HEIGHT - 240
-        
-        #gardien epreuve recyclage
-        path_gardien_tri = os.path.join(base_path, "..", "assets", "gardien", "gardien-recyclager.png")
-        self.gardien_tri_img = pygame.image.load(path_gardien_tri).convert_alpha()
-        self.gardien_tri_img = pygame.transform.scale(self.gardien_tri_img, (360, 160))
         self.gardien_tri_rect = self.gardien_tri_img.get_rect()
-        
-        self.gardien_tri_rect.left = 50
-        self.gardien_tri_rect.bottom = self.HEIGHT - 240
+        self._position_gardiens()
 
         self.dialogues_gardien_tri = [
             "Je suis le gardien du recyclage, celui qui veille à ce que chaque déchet trouve sa place.",
@@ -189,27 +182,19 @@ class Game(Fenetre):
         self.indice_dialogue = -1
 
         # Element a redimensionner
-        self.elems = ["background"] # on mettra les plateformes et autres surfaces 
-
+        self.elems = []
 
         path_poubelles = os.path.join(base_path, "..", "assets")
+        self.poubelle_jaune_base = pygame.image.load(os.path.join(path_poubelles, "poubelle_jaune.png")).convert_alpha()
+        self.poubelle_marron_base = pygame.image.load(os.path.join(path_poubelles, "poubelle_marron.png")).convert_alpha()
+        self.poubelle_verte_base = pygame.image.load(os.path.join(path_poubelles, "poubelle_verte.png")).convert_alpha()
+        self.dechet_carton_base = pygame.image.load(os.path.join(path_poubelles, "carton.png")).convert_alpha()
+        self.dechet_pomme_base = pygame.image.load(os.path.join(path_poubelles, "pomme.png")).convert_alpha()
+        self.dechet_verre_base = pygame.image.load(os.path.join(path_poubelles, "verre.png")).convert_alpha()
 
-        img_p_jaune = pygame.transform.scale(pygame.image.load(os.path.join(path_poubelles, "poubelle_jaune.png")).convert_alpha(), (80,100))
-        img_p_marron = pygame.transform.scale(pygame.image.load(os.path.join(path_poubelles, "poubelle_marron.png")).convert_alpha(), (80,100))
-        img_p_verte = pygame.transform.scale(pygame.image.load(os.path.join(path_poubelles, "poubelle_verte.png")).convert_alpha(), (80,100))
+        self._create_poubelles()
+        self._load_dechets()
 
-        sol_y = self.HEIGHT - 240
-        self.poubelles = [
-            Poubelle(self.WIDTH // 4, sol_y, img_p_jaune, "yellow", "recyclable"),
-            Poubelle(self.WIDTH // 2, sol_y, img_p_marron, "brown", "ordure"),
-            Poubelle(3 * self.WIDTH // 4, sol_y,img_p_verte,  "green", "verre")
-        ]
-
-        path_dechets = os.path.join(base_path, "..", "assets")
-        self.img_carton = pygame.transform.scale(pygame.image.load(os.path.join(path_dechets, "carton.png")).convert_alpha(), (50, 50))
-        self.img_pomme = pygame.transform.scale(pygame.image.load(os.path.join(path_dechets, "pomme.png")).convert_alpha(), (50, 50))
-        self.img_verre = pygame.transform.scale(pygame.image.load(os.path.join(path_dechets, "verre.png")).convert_alpha(), (50, 50))
-        
         # Variable pour stocker le menu ouvert
         self.menu_tri_actuel = None
         self.poubelle_concernee = None
@@ -223,6 +208,76 @@ class Game(Fenetre):
             self.prochain_bg = image_bg
             self.prochaine_pos_x = x_joueur
             self.faded_direction = 1
+
+    def _scale_item(self, image, target_width=None, target_height=None):
+        orig_w, orig_h = image.get_size()
+        if target_width is None and target_height is None:
+            return image
+        if target_width is None:
+            target_width = int(orig_w * target_height / orig_h)
+        if target_height is None:
+            target_height = int(orig_h * target_width / orig_w)
+        return pygame.transform.smoothscale(image, (target_width, target_height))
+
+    def _scale_gardien(self, image):
+        target_width = max(180, min(360, int(self.WIDTH * 0.18)))
+        return self._scale_item(image, target_width=target_width)
+
+    def _ground_offset(self):
+        return max(180, int(self.HEIGHT * 0.20))
+
+    def _position_gardiens(self):
+        bottom_offset = self._ground_offset() + 20
+        self.gardien_rect = self.gardien_img.get_rect()
+        self.gardien_rect.centerx = self.WIDTH // 2
+        self.gardien_rect.bottom = self.HEIGHT - bottom_offset
+        self.gardien_tri_rect = self.gardien_tri_img.get_rect()
+        self.gardien_tri_rect.left = max(20, int(self.WIDTH * 0.05))
+        self.gardien_tri_rect.bottom = self.HEIGHT - bottom_offset
+
+    def _create_poubelles(self):
+        previous_states = []
+        if hasattr(self, "poubelles"):
+            previous_states = [p.reussie for p in self.poubelles]
+
+        poubelle_width = max(72, min(140, int(self.WIDTH * 0.09)))
+        img_p_jaune = self._scale_item(self.poubelle_jaune_base, target_width=poubelle_width)
+        img_p_marron = self._scale_item(self.poubelle_marron_base, target_width=poubelle_width)
+        img_p_verte = self._scale_item(self.poubelle_verte_base, target_width=poubelle_width)
+
+        sol_y = self.HEIGHT - self._ground_offset()
+        self.poubelles = [
+            Poubelle(int(self.WIDTH * 0.25), sol_y, img_p_jaune, "yellow", "recyclable"),
+            Poubelle(int(self.WIDTH * 0.5), sol_y, img_p_marron, "brown", "ordure"),
+            Poubelle(int(self.WIDTH * 0.75), sol_y, img_p_verte, "green", "verre")
+        ]
+
+        if previous_states:
+            for poubelle, etat in zip(self.poubelles, previous_states):
+                poubelle.reussie = etat
+
+        if hasattr(self, "poubelle_concernee") and self.poubelle_concernee is not None:
+            self.poubelle_concernee = next((p for p in self.poubelles if p.type == self.poubelle_concernee.type), self.poubelle_concernee)
+            if self.menu_tri_actuel:
+                self.ouvrir_menu_tri(self.poubelle_concernee)
+
+    def _load_dechets(self):
+        target_width = max(40, min(70, int(self.WIDTH * 0.05)))
+        self.img_carton = self._scale_item(self.dechet_carton_base, target_width=target_width)
+        self.img_pomme = self._scale_item(self.dechet_pomme_base, target_width=target_width)
+        self.img_verre = self._scale_item(self.dechet_verre_base, target_width=target_width)
+
+    def resize(self):
+        super().resize()
+        self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
+        self.bg_epreuve1 = pygame.transform.scale(self.bg_epreuve1_base, (self.WIDTH, self.HEIGHT + 60))
+        self.bg_epreuve2 = pygame.transform.scale(self.bg_epreuve2_base, (self.WIDTH, self.HEIGHT))
+        self.gardien_img = self._scale_gardien(self.gardien_img_base)
+        self.gardien_tri_img = self._scale_gardien(self.gardien_tri_img_base)
+        self._position_gardiens()
+        self._create_poubelles()
+        self._load_dechets()
+        self.epreuve.resize(self.screen, self.WIDTH, self.HEIGHT, self.player.GROUND + self.player.rect.height, self.player.max_jump_height())
 
     def run(self):
         clock = pygame.time.Clock()
@@ -256,7 +311,8 @@ class Game(Fenetre):
                                 else:
                                     self.indice_dialogue = -1 
                                     self.dialogue_actuel = None
-                                    self.epreuve.lancer()
+                                    ground_y = self.player.GROUND + self.player.rect.height
+                                    self.epreuve.lancer(ground_y, self.player.max_jump_height())
 
                         elif self.salle_actuelle == "tri_dechets":
                             # Cas 1 : L'épreuve est terminée, on affiche juste un message de remerciement

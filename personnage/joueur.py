@@ -43,6 +43,15 @@ class Player(pygame.sprite.Sprite):
         # Placer sur le sol logique, pas au-dessus du bas de la fenêtre
         self.GROUND = min(int(Y_RATIO * self.HEIGHT), self.HEIGHT - self.rect.height)
 
+    def max_jump_height(self):
+        """Retourne la hauteur approximative du saut en pixels."""
+        gravity_step = self.GRAVITY * 0.05
+        velocity = self.JUMP_HEIGHT
+        height = 0.0
+        while velocity > 0:
+            height += velocity
+            velocity -= gravity_step
+        return int(height)
 
     def resize_img(self, w, h):
         """

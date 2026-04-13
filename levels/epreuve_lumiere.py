@@ -14,20 +14,29 @@ class EpreuveLumiere:
         self.temps_restant = 10.0
         self.cibles = []
 
-    def lancer(self):
+    def lancer(self, ground_y=None, player_jump_height=None):
         self.active = True
         self.termine = False
         self.temps_restant = 10.0
         self.cibles = []
+        self.ground_y = ground_y
+        self.player_jump_height = player_jump_height
         
         screen_w, screen_h = self.screen.get_size()
         
-        sol = screen_h - 260
-        cap_lumiere = sol - 150
+        if ground_y is None or player_jump_height is None:
+            ground_offset = max(180, int(screen_h * 0.20))
+            ground_y = screen_h - ground_offset
+            player_jump_height = max(120, int(screen_h * 0.20))
+
+        min_y = max(80, int(ground_y - player_jump_height))
+        max_y = min(int(ground_y - 40), screen_h - 40)
+        if max_y <= min_y:
+            max_y = min_y + 1
         
         for i in range(5):
             x = random.randint(100, screen_w - 100)
-            y = random.randint(int(cap_lumiere), int(sol))
+            y = random.randint(min_y, max_y)
             self.cibles.append(pygame.Rect(x, y, 40, 40))
 
     def update(self, player_rect, dt):
@@ -47,6 +56,32 @@ class EpreuveLumiere:
             self.active = False
             self.termine = True
             self.reussite = True
+
+    def resize(self, screen, width, height, ground_y=None, player_jump_height=None):
+        old_width, old_height = self.WIDTH, self.HEIGHT
+        self.screen = screen
+        self.WIDTH = width
+        self.HEIGHT = height
+        if ground_y is not None:
+            self.ground_y = ground_y
+        if player_jump_height is not None:
+            self.player_jump_height = player_jump_height
+        if not self.active or old_width <= 0 or old_height <= 0:
+            return
+
+        min_y = max(0, int(self.ground_y - self.player_jump_height))
+        max_y = min(int(self.ground_y - 40), height - 40)
+        if max_y <= min_y:
+            max_y = min_y + 1
+
+        for cible in self.cibles:
+            rel_x = cible.x / old_width
+            rel_y = cible.y / old_height
+            new_x = int(rel_x * width)
+            new_y = int(rel_y * height)
+            new_x = max(100, min(width - 100, new_x))
+            cible.x = new_x
+            cible.y = max(min_y, min(max_y, new_y))
 
     def draw(self):
         if not self.active: return
