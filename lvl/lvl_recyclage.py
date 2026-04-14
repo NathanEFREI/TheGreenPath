@@ -23,7 +23,7 @@ class LvlRecyclage(Fenetre):
         self.ratio_w = self.WIDTH / 1536
         self.ratio_h = self.HEIGHT / 864
         # Remplace "ville1.png" par l'image de fond spécifique au niveau recyclage si tu en as une
-        image_path = os.path.join(base_path, "..", "assets", "ville1.png")
+        image_path = os.path.join(base_path, "..", "assets", "ville2reparer.jpeg")
         icone_path = os.path.join(base_path, "..", "assets", "icones", "icone_dechets.png")
         self.background_base = pygame.image.load(image_path).convert()
         self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
@@ -44,7 +44,7 @@ class LvlRecyclage(Fenetre):
         self.gardien_img = pygame.transform.scale(self.gardien_img, (taille_g, taille_g))
         # On le place à gauche du sol
         pos_x_gardien = int(50 * self.ratio_w)
-        pos_y_gardien = self.HEIGHT - int(200 * self.ratio_h)
+        pos_y_gardien = self.HEIGHT - int(100 * self.ratio_h)
         self.gardien_rect = self.gardien_img.get_rect(bottomleft=(pos_x_gardien, pos_y_gardien))
         self.index_dialogue = 0
         self.dialogue_actuel = (self.textes_gardien[self.index_dialogue], "green")
@@ -66,7 +66,7 @@ class LvlRecyclage(Fenetre):
 
         # 1. Définir les "points de spawn" possibles (les mêmes endroits)
         # Remplace self.HEIGHT - 100 par la hauteur de ton sol (self.player.GROUND)
-        sol_y = self.HEIGHT - 200
+        sol_y = self.HEIGHT - int(100 * self.ratio_h)
         nb_monstres = random.randint(3, 6)
 
 
@@ -232,9 +232,38 @@ class LvlRecyclage(Fenetre):
                 else:
                     # Le temps est fini : on fait disparaître tous les monstres
                     self.groupe_monstres.empty()
-                    self.running = False
                     mini_jeu = MiniJeuDepot(self.compteur)
                     mini_jeu.run()
+
+                    # 2. Le mini-jeu est terminé, on vérifie le score
+                    if mini_jeu.dechets_reussis >= 5:
+                        # --- GAGNÉ ---
+                        self.running = False  # On quitte ce niveau définitivement
+
+                    else:
+                        # --- PERDU : ON RÉINITIALISE LE NIVEAU ---
+                        # On remet l'état au dialogue du début
+                        self.etat = "EXPLICATION"
+                        self.index_dialogue = 0
+                        self.dialogue_actuel = (self.textes_gardien[self.index_dialogue], "green")
+
+                        # On remet les scores et munitions à zéro
+                        self.compteur = 0
+                        self.munitions = self.munitions_max
+
+                        # IMPORTANT : On met à jour le temps de fin de dialogue
+                        # pour que les 5 secondes d'attente se relancent correctement plus tard
+                        self.temps_fin_dialogue = pygame.time.get_ticks()
+
+                        # On vide les groupes (on supprime tous les anciens monstres et tirs)
+                        self.groupe_monstres.empty()
+                        self.groupe_projectiles.empty()
+
+                        # On replace le joueur à son point de départ
+                        self.player.actu(self.WIDTH, self.HEIGHT)
+
+                        # On vide les touches appuyées pour éviter qu'il ne tire ou saute tout seul
+                        self.pressed.clear()
 
                 # C. MISE À JOUR DES SPRITES (Animations, Déplacements)
                 self.groupe_monstres.update()
@@ -324,3 +353,6 @@ class LvlRecyclage(Fenetre):
         pygame.quit()
 
 
+if __name__ == "__main__":
+    niveau = LvlRecyclage()
+    niveau.run()
