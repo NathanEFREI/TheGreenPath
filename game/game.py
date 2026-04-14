@@ -127,7 +127,7 @@ class Game(Fenetre):
         self.font_epreuve = pygame.font.SysFont("Arial", 30, bold=True)
         image_path_qcm = os.path.join(base_path, "..", "assets", "epreuves", "qcm.png") 
         self.bg_qcm_base = pygame.image.load(image_path_qcm).convert()
-        self.bg_qcm = pygame.transform.scale(self.bg_qcm_base, (self.WIDTH, self.HEIGHT))
+        self.bg_qcm = pygame.transform.scale(self.bg_qcm_base, (self.WIDTH, self.HEIGHT + 400))
         self.qcm = QCM(self.screen, self.font_epreuve, self.WIDTH, self.HEIGHT)
 
         self.fade_surface = pygame.Surface((self.WIDTH, self.HEIGHT))
@@ -168,7 +168,9 @@ class Game(Fenetre):
 
         self._position_gardiens()
         path_gardien_monstre_base = os.path.join(base_path, "..", "assets", "gardien", "gardien-reparer.png")
-        self.gardien_monstre_img = pygame.image.load(path_gardien_monstre_base).convert_alpha()
+        self.gardien_monstre_img_base = pygame.image.load(path_gardien_monstre_base).convert_alpha()
+        target_width_monstre = int(self.WIDTH * 0.11) 
+        self.gardien_monstre_img = self._scale_item(self.gardien_monstre_img_base, target_width=target_width_monstre)
 
         self.dialogues_gardien_tri = [
             "Je suis le gardien du recyclage, celui qui veille à ce que chaque déchet trouve sa place.",
@@ -183,6 +185,7 @@ class Game(Fenetre):
         self.epreuve_tri_terminee = False 
         self.tri_autorise = False
 
+        self.qcm_intro_faite = False 
         self.epreuve_qcm_terminee = False
 
         # Liste des répliques du Gardien
@@ -359,12 +362,31 @@ class Game(Fenetre):
                                             break # On arrête la boucle dès qu'on a trouvé la poubelle touchée
 
                         elif self.salle_actuelle == "salle_qcm":
-                            if not self.qcm.active:
+                            if self.epreuve_qcm_terminee:
+                                pass
+                         
+                            elif not self.qcm_intro_faite:
+                                # Premier appui sur E : Dialogue d'intro
+                                self.dialogue_actuel = ("Bienvenue au Protocole de Validation Final. Nous allons tester tes connaissances !", "black")
+                                self.qcm_intro_faite = True
+                            elif not self.qcm.active:
                                 self.qcm.lancer()
                                 self.dialogue_actuel = None
                             elif self.qcm.termine:
+                                score = self.qcm.score
                                 self.qcm.active = False
                                 self.epreuve_qcm_terminee =True
+                                if score == 10:
+                                    msg = f("Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !")
+                                    couleur = "green"
+                                elif 5 <= score < 10:
+                                    msg = f("Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès.")
+                                    couleur = "black"
+                                else:
+                                    msg = f("C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !")
+                                    couleur = "red"
+                                
+                                self.dialogue_actuel = (msg, couleur)
 
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False
@@ -420,7 +442,7 @@ class Game(Fenetre):
             if self.salle_actuelle == "tri_dechets" and self.player.rect.right >= self.WIDTH and self.epreuve_tri_terminee:
                 self.transition_vers("tri_poubelle",self.bg_epreuve3)
             if self.salle_actuelle == "tri_poubelle" and self.player.rect.right >= self.WIDTH and self.epreuve_tri_terminee:
-                self.transition_vers("salle_qcm", self.bg_epreuve3)
+                self.transition_vers("salle_qcm", self.bg_qcm)
 
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
@@ -443,11 +465,15 @@ class Game(Fenetre):
                 from lvl.lvl_recyclage import LvlRecyclage
                 tri_poubelle = LvlRecyclage()
                 tri_poubelle.run()
+                self.salle_actuelle = "salle_qcm"
             elif self.salle_actuelle == "salle_qcm":
-                self.screen.blit(self.background, (0,0))
-                self.screen.blit(self.gardien_img, (self.WIDTH//4, self.gardien_rect.y))
-                self.screen.blit(self.gardien_tri_img, (self.WIDTH//2,self.gardien_rect.y))
-                self.screen.blit(self.gardien_monstre_base, (self.WIDTH//2, self.gardien_rect.y))
+                self.screen.blit(self.bg_qcm, (0, -int(self.HEIGHT * 0.25)))
+                y_sol = self.HEIGHT - self._ground_offset()
+                self.screen.blit(self.gardien_img, (self.WIDTH // 4 - self.gardien_rect.width // 2, y_sol - self.gardien_img.get_height()))
+                self.screen.blit(self.gardien_tri_img, (self.WIDTH // 2 - self.gardien_tri_img.get_width() // 2, y_sol - self.gardien_tri_img.get_height()))
+                self.screen.blit(self.gardien_monstre_img, (self.WIDTH * 3 // 4 - self.gardien_monstre_img.get_width() // 2, y_sol - self.gardien_monstre_img.get_height()))
+                if self.qcm.active:
+                    self.qcm.draw(self.screen)
 
             else: #Spawn
                 self.screen.blit(self.background, (0, 0))
@@ -502,7 +528,6 @@ class Game(Fenetre):
                 self.screen.blit(self.fade_surface, (0, 0))
 
             clock.tick(FPS)
-            self.qcm.draw()
             pygame.display.flip()
 
         pygame.quit()

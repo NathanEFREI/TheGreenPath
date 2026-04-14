@@ -39,9 +39,9 @@ class QCM:
                 "correct": 1
             },
             {
-                "titre": "Comment s'appelle la 1ère phase du lancer ?",
-                "reponses": ["Phase de Vol", "Phase de Visée", "Phase de Panique"],
-                "correct": 1
+                "titre": "De quelle couleur est la poubelle pour les déchets en verre ? ",
+                "reponses": ["Marron", "Vert", "Jaune"],
+                "correct": 2
             },
             {
                 "titre": "Éteindre les lumières aide aussi...",
@@ -98,7 +98,7 @@ class QCM:
                     else:
                         self.generer_boutons()
 
-    def draw(self):
+    def draw(self, screen):
         if not self.active:
             return
 

@@ -350,7 +350,6 @@ class LvlRecyclage(Fenetre):
             clock.tick(FPS)
             pygame.display.flip()
 
-        pygame.quit()
 
 
 if __name__ == "__main__":
