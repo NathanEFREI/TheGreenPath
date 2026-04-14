@@ -1,20 +1,21 @@
 import pygame
 
+
 def creer_party(screen, width, height, active1, active2, nom_partie="", nom_joueur=""):
     """
-    Affiche le popup de création de partie.
-    Retourne (rect_popup, input_box2, input_box1, nom_partie, nom_joueur, lancer)
-    lancer = True quand le joueur clique sur "Jouer"
+    Affiche le popup pour saisir le nom de la partie et le nom du joueur.
     """
+    
     popup_w = width * 0.6
     popup_h = height * 0.5
     rect_popup = pygame.Rect(0, 0, popup_w, popup_h)
     rect_popup.center = (width // 2, height // 2)
 
-    font_titre  = pygame.font.SysFont("calibri", 40, bold=True)
+    # Prépare les polices de texte pour le titre, les labels, les champs et le bouton.
+    font_titre = pygame.font.SysFont("calibri", 40, bold=True)
     font_bouton = pygame.font.SysFont("calibri", 30, bold=True)
-    font_label  = pygame.font.SysFont("calibri", 28)
-    font_input  = pygame.font.SysFont("calibri", 26)
+    font_label = pygame.font.SysFont("calibri", 28)
+    font_input = pygame.font.SysFont("calibri", 26)
 
     # --- Fond du popup ---
     pygame.draw.rect(screen, pygame.Color("lightgrey"), rect_popup, border_radius=20)
@@ -30,13 +31,13 @@ def creer_party(screen, width, height, active1, active2, nom_partie="", nom_joue
     box_w = popup_w * 0.80
     box_h = popup_h * 0.10
 
-    # Label + box : nom de la partie
+    # Label + champ de saisie pour le nom de la partie
     label1 = font_label.render("Nom de la partie :", True, "black")
     rect_label1 = label1.get_rect(midleft=(marge_gauche, rect_popup.top + popup_h * 0.28))
     screen.blit(label1, rect_label1)
     input_box1 = pygame.Rect(marge_gauche, rect_label1.bottom + 6, box_w, box_h)
 
-    # Label + box : nom du joueur
+    # Label + champ de saisie pour le nom du joueur
     label2 = font_label.render("Nom du joueur :", True, "black")
     rect_label2 = label2.get_rect(midleft=(marge_gauche, rect_popup.top + popup_h * 0.58))
     screen.blit(label2, rect_label2)

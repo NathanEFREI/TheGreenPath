@@ -11,8 +11,11 @@ import random
 
 
 class LvlRecyclage(Fenetre):
+    """
+    Niveau de recyclage où le joueur affronte des monstres et trie les déchets.
+    """
+
     def __init__(self):
-        # On hérite de Fenetre pour avoir la gestion de l'écran et des événements de base
         super().__init__("The Green Path - Niveau Recyclage")
 
         # --- CHARGEMENT DU BACKGROUND ---
@@ -39,21 +42,19 @@ class LvlRecyclage(Fenetre):
         self.gardien_rect = self.gardien_img.get_rect(bottomleft=(50, self.HEIGHT - 170))
         self.index_dialogue = 0
         self.dialogue_actuel = (self.textes_gardien[self.index_dialogue], "green")
-        # --- INITIALISATION DU JOUEUR ---
         self.player = Player(self.WIDTH, self.HEIGHT)
         self.player.actu(self.WIDTH, self.HEIGHT)
         self.compteur = 0
-        # 2. Charger l'image de l'icône (remplace par ton bon chemin)
+
         self.icone_base = pygame.image.load(icone_path).convert_alpha()
-        self.icone = pygame.transform.scale(self.icone_base, (100, 100))  # Ajuste la taille
-        # 3. Préparer la police pour le texte
-        pygame.font.init()  # Sécurité pour s'assurer que le module font est chargé
-        self.police = pygame.font.SysFont("arial", 40)  # Remplace "arial" par le nom de ta police si tu en as une
+        self.icone = pygame.transform.scale(self.icone_base, (100, 100))
+
+        pygame.font.init()
+        self.police = pygame.font.SysFont("arial", 40)
         # --- VARIABLES DE GESTION ---
         self.pressed = {}
         self.move = False
 
-        # Éléments à redimensionner automatiquement par la méthode de Fenetre
         self.elems = ["background"]
         self.groupe_monstres = pygame.sprite.Group()
 
@@ -94,9 +95,11 @@ class LvlRecyclage(Fenetre):
         self.police_geante = pygame.font.SysFont("arial", 200, bold=True)
 
     def afficher_munitions(self):
-        """Affiche le nombre de munitions sous le score"""
+        """
+        Affiche le compteur de munitions à l'écran.
+        """
+
         texte_munitions = f"Munitions: {self.munitions}/{self.munitions_max}"
-        # On choisit une couleur orange si munitions faibles, sinon blanc
         couleur = (255, 255, 255) if self.munitions > 5 else (255, 165, 0)
 
         surface_mun = self.police.render(texte_munitions, True, couleur)
@@ -122,7 +125,9 @@ class LvlRecyclage(Fenetre):
         self.screen.blit(surface_timer, rect_timer)
 
     def afficher_compteur(self):
-        """Affiche l'icône et le chiffre en haut à droite de l'écran"""
+        """
+        Affiche l'icône et le chiffre en haut à droite de l'écran
+        """
 
         # --- L'IMAGE ---
         icone_rect = self.icone.get_rect()
@@ -141,6 +146,10 @@ class LvlRecyclage(Fenetre):
         self.screen.blit(texte_surface, texte_rect)
 
     def run(self):
+        """
+        Boucle principale du niveau de recyclage.
+        """
+        
         clock = pygame.time.Clock()
 
         while self.running:
@@ -155,19 +164,19 @@ class LvlRecyclage(Fenetre):
 
                     # A. GESTION DU DIALOGUE (Touche E ou ESPACE)
                     if self.etat == "EXPLICATION" and (event.key == pygame.K_e or event.key == pygame.K_SPACE):
-                        self.index_dialogue += 1  # On passe à la phrase suivante
+                        # Passage à la phrase suivante du gardien durant l'explication.
+                        self.index_dialogue += 1
 
                         if self.index_dialogue < len(self.textes_gardien):
-                            # Il reste du texte
                             self.dialogue_actuel = (self.textes_gardien[self.index_dialogue], "green")
                         else:
-                            # On a lu toutes les phrases : on passe à l'attente
                             self.dialogue_actuel = None
                             self.etat = "ATTENTE"
                             self.temps_fin_dialogue = maintenant
 
                     # B. TIRER UN PROJECTILE (Touche F)
                     elif event.key == pygame.K_f and self.munitions > 0 and self.etat == "JEU":
+                        # Le joueur tire un projectile s'il a des munitions.
                         type_p = random.choice([1, 2, 3])
                         nouveau_proj = Projectile(self.player.rect.right, self.player.rect.centery, self.WIDTH, type_p)
                         self.groupe_projectiles.add(nouveau_proj)
@@ -269,7 +278,7 @@ class LvlRecyclage(Fenetre):
                     texte, couleur = self.dialogue_actuel
                     afficher_dialogue(self.screen, texte, couleur)
 
-                    # --- AFFICHAGE DU COMPTE À REBOURS GÉANT ---
+                    # --- AFFICHAGE DU COMPTE À REBOURS ---
                 if self.etat == "ATTENTE":
                     # On calcule combien de secondes il reste (5, 4, 3, 2, 1)
                     temps_passe = maintenant - self.temps_fin_dialogue
@@ -301,7 +310,3 @@ class LvlRecyclage(Fenetre):
         pygame.quit()
 
 
-# Pour tester le niveau indépendamment (facultatif) :
-if __name__ == "__main__":
-    niveau = LvlRecyclage()
-    niveau.run()

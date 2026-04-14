@@ -1,11 +1,16 @@
 import pygame
 
+
 class Poubelle:
+    """
+    Représente une poubelle de tri à l'écran.
+    """
+
     def __init__(self, x, y, image, couleur_nom, dechet_attendu):
-        self.image = image 
+        self.image = image
         self.rect = self.image.get_rect(midbottom=(x, y))
         self.type = couleur_nom
-        self.dechet_attendu = dechet_attendu 
+        self.dechet_attendu = dechet_attendu
         self.reussie = False
 
     def draw(self, screen):

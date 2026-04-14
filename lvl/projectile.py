@@ -1,16 +1,18 @@
 import os
-
-import pygame
 import random
+import pygame
 
 
 class Projectile(pygame.sprite.Sprite):
+    """
+    Projectile tiré par le joueur pendant le niveau de recyclage.
+    """
+
     def __init__(self, x, y, width, type_proj):
         super().__init__()
         self.WIDTH = width
         self.vitesse = 8
         base_path = os.path.dirname(__file__)
-        # On définit les dégâts selon le type de projectile (1, 2 ou 3)
         if type_proj == 1:
             self.degats = 5
         elif type_proj == 2:
@@ -52,15 +54,15 @@ class Projectile(pygame.sprite.Sprite):
         self.compteur_anim = 0
 
     def update(self):
-        # 1. Déplacement vers la droite
+        """
+        Déplace le projectile et anime son sprite.
+        """
+        
         self.rect.x += self.vitesse
-
-        # 2. Alternance aléatoire de l'image (toutes les 4 frames environ pour ne pas clignoter trop vite)
         self.compteur_anim += 1
         if self.compteur_anim >= 4:
             self.image = random.choice(self.sprites)
             self.compteur_anim = 0
 
-        # 3. Disparaître si le projectile sort de l'écran à droite
         if self.rect.left > self.WIDTH:
             self.kill()

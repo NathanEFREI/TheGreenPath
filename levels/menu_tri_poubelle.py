@@ -1,16 +1,23 @@
 import pygame
 
+
 class MenuTri:
+    """
+    Menu de tri qui s'affiche au-dessus d'une poubelle.
+
+    Le joueur choisit l'image correspondant au type de déchet attendu.
+    """
+
     def __init__(self, poubelle_rect, option1_img, option2_img, type1, type2):
         self.active = True
-        #bulles à gauche et à droite au-dessus de la poubelle
+        # Positions des deux options au-dessus de la poubelle.
         self.rect1 = option1_img.get_rect(midbottom=(poubelle_rect.left - 20, poubelle_rect.top - 20))
         self.rect2 = option2_img.get_rect(midbottom=(poubelle_rect.right + 20, poubelle_rect.top - 20))
-        
+
         self.img1 = option1_img
         self.img2 = option2_img
-        self.type1 = type1 
-        self.type2 = type2 
+        self.type1 = type1
+        self.type2 = type2
 
     def draw(self, screen):
         #cercles de fond pour faire ressortir les icônes

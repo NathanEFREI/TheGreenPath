@@ -2,15 +2,19 @@ import pygame
 import os
 
 
-# Tu peux importer tes constantes de redimensionnement ici si besoin
+# Ce module définit les monstres qui apparaissent dans le niveau de recyclage.
+
 
 class Monstre(pygame.sprite.Sprite):
+    """
+    Un monstre qui avance vers le joueur et peut être touché par un projectile.
+    """
+
     def __init__(self, x, y, width, height, type_monstre=1):
         super().__init__()
         self.WIDTH, self.HEIGHT = width, height
         self.type_monstre = type_monstre
 
-        # --- 1. CHARGEMENT DES SPRITES (Selon le type) ---
         self.sprites_walk = []
         base_path = os.path.dirname(__file__)
 
@@ -50,7 +54,10 @@ class Monstre(pygame.sprite.Sprite):
         self.invulnerable = False
 
     def subir_degats(self, montant):
-        """Réduit la vie du monstre, le tue si PV <= 0. Retourne True si le monstre meurt."""
+        """
+        Applique des dégâts et supprime le monstre s'il n'a plus de points de vie.
+        """
+
         self.pv -= montant
         if self.pv <= 0:
             self.kill()
@@ -58,9 +65,12 @@ class Monstre(pygame.sprite.Sprite):
         return False
 
     def afficher_barre_vie(self, surface):
-        """Dessine une barre de vie au-dessus du monstre"""
-        couleur_fond = (200, 0, 0)  # Rouge foncé (vie perdue)
-        couleur_vie = (0, 200, 0)  # Vert (vie restante)
+        """
+        Dessine une barre de vie au-dessus du monstre.
+        """
+
+        couleur_fond = (200, 0, 0)
+        couleur_vie = (0, 200, 0)
 
         largeur_barre = 40
         hauteur_barre = 5
@@ -79,19 +89,18 @@ class Monstre(pygame.sprite.Sprite):
         if largeur_actuelle > 0:
             pygame.draw.rect(surface, couleur_vie, (x_barre, y_barre, largeur_actuelle, hauteur_barre))
     def update(self):
-        """Cette fonction sera appelée à chaque image dans la boucle run()"""
-        # A. ANIMATION
-        self.current_sprite += 0.15  # Vitesse de l'animation
+        """
+        Met à jour l'animation et le déplacement du monstre à chaque frame.
+        """
+        self.current_sprite += 0.15
         if self.current_sprite >= len(self.sprites_walk):
             self.current_sprite = 0
 
         self.image = self.sprites_walk[int(self.current_sprite)]
 
-        # Si le monstre va à gauche, on retourne l'image (flip)
         if self.type_monstre == 2:
             self.image = pygame.transform.flip(self.image, True, False)
 
-        # B. DÉPLACEMENT
         self.rect.x += self.vitesse * self.direction
         self.compteur_pas += abs(self.vitesse)
 

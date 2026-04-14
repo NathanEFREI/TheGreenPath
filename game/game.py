@@ -10,7 +10,7 @@ from levels.menu_tri_poubelle import MenuTri
 from .utils import draw_button, confirm_quit
 
 
-# Instancier la fenêtre de jeu
+# Fenetre est la classe de base qui gère l'écran, la taille et les événements
 class Fenetre:
     def __init__(self, caption: str):
         pygame.init()
@@ -27,41 +27,39 @@ class Fenetre:
 
 
     def event(self, event):
+        """Traite les événements de base de la fenêtre.
+
+        Quitter, redimensionner, et basculer en plein écran sont gérés ici.
+        """
         if event.type == pygame.QUIT:
             self.running = False
 
         elif event.type == pygame.VIDEORESIZE:
             self.WIDTH, self.HEIGHT = event.size
             self.resize()
-        
-        elif event.type == pygame.KEYDOWN:
-                # fullscreen ou pas avec f11
-                if event.key == pygame.K_F11: # peut faire un dico ou on met une fonction qui fait ca
-                    self.fullscreen = not self.fullscreen
-                    self.resize()
 
-                # condition fermer la fenêtre avec esc
-                elif event.key == pygame.K_ESCAPE:
-                    self.running = False
+        elif event.type == pygame.KEYDOWN:
+            # Plein écran / fenêtré avec F11.
+            if event.key == pygame.K_F11:
+                self.fullscreen = not self.fullscreen
+                self.resize()
+
+            # Quitter avec Échap.
+            elif event.key == pygame.K_ESCAPE:
+                self.running = False
 
 
     def resize_obj(self):
-        """
-        Permet de redimensionner la fenetre et tous les elements dans la liste passée
-        """
-        # scale des images de base (basique)
+        """Redimensionne les éléments graphiques enregistrés après un changement de taille."""
         for e in self.elems:
             setattr(self, e, pygame.transform.scale(getattr(self, e + "_base"), (self.WIDTH, self.HEIGHT)))
 
-        # Ceux qui ont deja leur methode resize (que Player pour l'instant)
-        ## une liste pour appeler direct resize de l'element ?
+        # Appelle la méthode de redimensionnement du joueur si elle existe.
         self.player.actu(self.WIDTH, self.HEIGHT)
 
 
     def resize(self):
-        """
-        Permet de passer du fullscreen en mode resize et inversement
-        """
+        """Actualise la taille de la fenêtre quand le joueur change de mode ou redimensionne."""
         if self.fullscreen:
             self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
             self.WIDTH, self.HEIGHT = self.screen.get_size()
@@ -72,10 +70,9 @@ class Fenetre:
             self.resize_obj()
 
 
-
 class Game(Fenetre):
     def __init__(self, volume: float = 0.4):
-        # permet d'hériter de la classe parent (fait le init du parent)
+        """Configure le jeu, charge les ressources, et initialise l'état global du monde."""
         super().__init__("The Green Path")
         pygame.mixer.init()
         self.volume = volume
@@ -89,23 +86,28 @@ class Game(Fenetre):
         pygame.mixer.music.set_volume(self.volume)
         pygame.mixer.music.play(-1)
 
-        # charger le background
+        # Charger l'arrière-plan principal du jeu.
         self.background_base = pygame.image.load(image_path).convert()
-        # pour eviter la perte d'info lors du scale on differentie l'image de base et celle scale
+        # On garde une copie non redimensionnée afin de pouvoir mettre à l'échelle proprement.
         self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
 
-        self.player = Player(self.WIDTH, self.HEIGHT)  # spawn player avec taille de fenêtre
+        # Créer le joueur et l'ajuster à la taille de l'écran.
+        self.player = Player(self.WIDTH, self.HEIGHT)
         self.player.actu(self.WIDTH, self.HEIGHT)
+
+        # Suivi des touches enfoncées et du compteur de gestes écologiques.
         self.pressed = {}
         self.geste_count = 0
         self.geste_max = 3
         self.geste_icon = None
 
+        # Flag de mouvement du joueur.
         self.move: bool
 
-        # État du dialogue (None = pas de dialogue, sinon tuple (texte, couleur))
+        # Stocke un dialogue actif sous forme de (texte, couleur), ou None si aucun dialogue.
         self.dialogue_actuel = None
 
+        # État des sections de la scène : spawn, lumiere, tri_dechets, tri_poubelle.
         self.salle_actuelle = "spawn"
         self.epreuve_lumiere_terminee = False
 
@@ -204,15 +206,18 @@ class Game(Fenetre):
 
     def transition_vers(self, nom_salle, image_bg, x_joueur=50):
         """
-        Cette méthode prépare les données pour le fondu
+        Prépare une transition en fondu vers une nouvelle salle.
         """
-        if self.faded_direction == 0: 
+        if self.faded_direction == 0:
             self.prochaine_salle_nom = nom_salle
             self.prochain_bg = image_bg
             self.prochaine_pos_x = x_joueur
             self.faded_direction = 1
 
     def _scale_item(self, image, target_width=None, target_height=None):
+        """
+        Redimensionne une image en conservant son ratio quand nécessaire.
+        """
         orig_w, orig_h = image.get_size()
         if target_width is None and target_height is None:
             return image
@@ -223,6 +228,9 @@ class Game(Fenetre):
         return pygame.transform.smoothscale(image, (target_width, target_height))
 
     def _scale_gardien(self, image):
+        """
+        Applique une taille adaptée aux gardiens en fonction de la largeur de l'écran.
+        """
         target_width = max(180, min(360, int(self.WIDTH * 0.18)))
         return self._scale_item(image, target_width=target_width)
 
@@ -230,6 +238,9 @@ class Game(Fenetre):
         return max(180, int(self.HEIGHT * 0.20))
 
     def _position_gardiens(self):
+        """
+        Positionne les gardiens sur l'écran en fonction de la taille de la fenêtre.
+        """
         bottom_offset = self._ground_offset() + 20
         self.gardien_rect = self.gardien_img.get_rect()
         self.gardien_rect.centerx = self.WIDTH // 2
@@ -239,6 +250,9 @@ class Game(Fenetre):
         self.gardien_tri_rect.bottom = self.HEIGHT - bottom_offset
 
     def _create_poubelles(self):
+        """
+        Crée ou met à jour les poubelles de tri affichées à l'écran.
+        """
         previous_states = []
         if hasattr(self, "poubelles"):
             previous_states = [p.reussie for p in self.poubelles]
@@ -265,6 +279,9 @@ class Game(Fenetre):
                 self.ouvrir_menu_tri(self.poubelle_concernee)
 
     def _load_dechets(self):
+        """
+        Redimensionne les icônes de déchets selon la taille de l'écran.
+        """
         target_width = max(40, min(70, int(self.WIDTH * 0.05)))
         self.img_carton = self._scale_item(self.dechet_carton_base, target_width=target_width)
         self.img_pomme = self._scale_item(self.dechet_pomme_base, target_width=target_width)
@@ -298,7 +315,7 @@ class Game(Fenetre):
 
                 
                     if event.key == pygame.K_e:
-                        # --- LOGIQUE SALLE LUMIÈRE ---
+                        # Touche E utilisée pour interagir avec le gardien ou lancer l'épreuve.
                         if self.salle_actuelle == "lumiere" and not self.epreuve.active:
                             if self.epreuve_lumiere_terminee:
                                 if self.dialogue_actuel:
@@ -312,13 +329,13 @@ class Game(Fenetre):
                                 elif self.indice_dialogue < len(self.dialogues_gardien) - 1:
                                     self.indice_dialogue += 1
                                 else:
-                                    self.indice_dialogue = -1 
+                                    self.indice_dialogue = -1
                                     self.dialogue_actuel = None
                                     ground_y = self.player.GROUND + self.player.rect.height
                                     self.epreuve.lancer(ground_y, self.player.max_jump_height())
 
                         elif self.salle_actuelle == "tri_dechets":
-                            # Cas 1 : L'épreuve est terminée, on affiche juste un message de remerciement
+                            # Gestion des interactions de tri dans la salle recyclage.
                             if self.epreuve_tri_terminee:
                                 if self.dialogue_actuel:
                                     self.dialogue_actuel = None
@@ -326,25 +343,27 @@ class Game(Fenetre):
                                     self.dialogue_actuel = ("Merci encore pour ton aide ! Nitidopolis respire mieux grâce à toi.", "black")
 
                             elif not self.tri_autorise:
+                                # Affiche une séquence de dialogues explicatifs avant de pouvoir trier.
                                 if self.indice_dialogue_tri < len(self.dialogues_gardien_tri) - 1:
                                     self.indice_dialogue_tri += 1
                                     self.dialogue_actuel = (self.dialogues_gardien_tri[self.indice_dialogue_tri], "black")
                                 else:
                                     self.indice_dialogue_tri = -1
                                     self.dialogue_actuel = None
-                                    self.tri_autorise = True # Maintenant on peut trier !
+                                    self.tri_autorise = True
 
-                            else: 
+                            else:
                                 if self.dialogue_actuel:
                                     self.dialogue_actuel = None
                                 else:
+                                    # Si le joueur touche une poubelle, ouvrir le menu de tri.
                                     for p in self.poubelles:
                                         if self.player.rect.colliderect(p.rect):
                                             if hasattr(p, 'reussie') and p.reussie:
                                                 self.dialogue_actuel = ("Cette poubelle est déjà bien triée !", "black")
                                             else:
                                                 self.ouvrir_menu_tri(p)
-                                            break # On arrête la boucle dès qu'on a trouvé la poubelle touchée
+                                            break
                                         
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False
@@ -364,25 +383,27 @@ class Game(Fenetre):
                         self.menu_tri_actuel = None #Ferme le menu                 
 
             if self.faded_direction == 1:
+                # Fondu vers la nouvelle salle : opacité augmente.
                 self.fade_opacite += 8
                 if self.fade_opacite >= 255:
                     self.fade_opacite = 255
-
                     self.salle_actuelle = self.prochaine_salle_nom
-                    self.background = pygame.transform.scale(self.prochain_bg, (self.WIDTH,self.HEIGHT))
+                    self.background = pygame.transform.scale(self.prochain_bg, (self.WIDTH, self.HEIGHT))
                     self.player.rect.left = self.prochaine_pos_x
                     self.faded_direction = -1
 
             elif self.faded_direction == -1:
+                # Arrivée de la nouvelle salle : opacité diminue.
                 self.fade_opacite -= 8
                 if self.fade_opacite <= 0:
                     self.fade_opacite = 0
                     self.faded_direction = 0
 
-            dt = clock.get_time() / 1000 
+            # Mise à jour de l'épreuve de lumière même si elle n'est pas active.
+            dt = clock.get_time() / 1000
             self.epreuve.update(self.player.rect, dt)
 
-            # Gestion de la fin de l'épreuve
+            # Gestion de la fin de l'épreuve de lumière.
             if self.epreuve.termine:
                 if self.epreuve.reussite:
                     self.geste_count = min(self.geste_max, self.geste_count + 1)
@@ -393,40 +414,41 @@ class Game(Fenetre):
                 self.epreuve.termine = False
 
 
+            # Déclenche les transitions de salle lorsque le joueur atteint le bord droit.
             if self.salle_actuelle == "spawn" and self.player.rect.right >= self.WIDTH:
                 self.transition_vers("lumiere", self.bg_epreuve1)
 
             if self.salle_actuelle == "lumiere" and self.player.rect.right >= self.WIDTH and self.epreuve.reussite:
                 self.transition_vers("tri_dechets", self.bg_epreuve2)
+
             if self.salle_actuelle == "tri_dechets" and self.player.rect.right >= self.WIDTH and self.epreuve_tri_terminee:
-                self.transition_vers("tri_poubelle",self.bg_epreuve3)
+                self.transition_vers("tri_poubelle", self.bg_epreuve3)
 
-            # Afficher le background
+            # Dessine le fond situé derrière les éléments dynamiques.
             self.screen.blit(self.background, (0, 0))
-            # appeler le niveau: self.screen.blits() pour mettre les plateformes
 
-
-  
+            # Contenu spécifique selon la salle actuelle.
             if self.salle_actuelle == "lumiere":
-                self.screen.blit(self.background, (0, -60)) # On remonte un peu pour le décor
+                self.screen.blit(self.background, (0, -60))
                 self.screen.blit(self.gardien_img, self.gardien_rect)
-                self.epreuve.draw() # Ampoules uniquement ici
-                
+                self.epreuve.draw()
+
             elif self.salle_actuelle == "tri_dechets":
                 self.screen.blit(self.background, (0, 0))
                 self.screen.blit(self.gardien_tri_img, self.gardien_tri_rect)
                 for p in self.poubelles:
-                    p.draw(self.screen) # Poubelles uniquement ici
+                    p.draw(self.screen)
+
             elif self.salle_actuelle == "tri_poubelle":
                 self.screen.blit(self.background, (0, 0))
                 from lvl.lvl_recyclage import LvlRecyclage
                 tri_poubelle = LvlRecyclage()
                 tri_poubelle.run()
 
-            else: #Spawn
+            else:  # spawn
                 self.screen.blit(self.background, (0, 0))
 
-            # Afficher le compteur de gestes écologiques
+            # Affiche le compteur de gestes écologiques en haut à gauche.
             if self.geste_icon is not None:
                 hud_x, hud_y = 10, 10
                 self.screen.blit(self.geste_icon, (hud_x, hud_y))
@@ -435,7 +457,7 @@ class Game(Fenetre):
                 geste_rect = geste_text.get_rect(midleft=(text_x, hud_y + self.geste_icon.get_height() // 2))
                 self.screen.blit(geste_text, geste_rect)
 
-            # --- 2. DESSIN DES ENTITÉS ET INTERFACES ---
+            # --- DESSIN DES ENTITÉS ET INTERFACES ---
             if self.menu_tri_actuel:
                 self.menu_tri_actuel.draw(self.screen)
 
@@ -481,6 +503,7 @@ class Game(Fenetre):
         pygame.quit()
 
     def ouvrir_menu_tri(self, poubelle):
+        """Ouvre le menu de tri pour la poubelle sélectionnée."""
         self.poubelle_concernee = poubelle
         # Exemple : La poubelle jaune propose Carton vs Pomme
         if poubelle.type == "yellow":

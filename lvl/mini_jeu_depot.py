@@ -8,15 +8,19 @@ from constante import FPS
 
 
 class MiniJeuDepot(Fenetre):
+    """
+    Mini-jeu où le joueur doit lancer des déchets dans une poubelle.
+    """
+
     def __init__(self, score_joueur):
         super().__init__("Mini-Jeu : Dépôt des déchets")
 
-        # --- VARIABLES DE BASE ---
+        # Nombre de lancers autorisés, basé sur le score précédent.
         self.tentatives = score_joueur
         self.dechets_reussis = 0
         self.pressed = {}
 
-        # --- CHARGEMENT DU FOND ET DU JOUEUR ---
+        # Chargement du fond et du joueur.
         base_path = os.path.dirname(__file__)
         image_path = os.path.join(base_path, "..", "assets", "ville1.png")
         self.background_base = pygame.image.load(image_path).convert()
@@ -53,18 +57,23 @@ class MiniJeuDepot(Fenetre):
         self.teleporter_joueur()
 
     def teleporter_joueur(self):
-        """Téléporte le joueur entre la moitié et les 3/4 de l'écran"""
-        # Calcul de la zone de spawn
+        """
+        Place le joueur dans une zone de lancement aléatoire et fixe la poubelle.
+        """
+
         zone_debut = self.WIDTH // 2
         zone_fin = (self.WIDTH * 3) // 4
 
         self.player.rect.left = random.randint(zone_debut, zone_fin)
         self.player.rect.bottom = self.HEIGHT - 250
 
-        # La poubelle reste fixe à droite
         self.poubelle_rect.midbottom = (self.WIDTH - 120, self.HEIGHT - 250)
 
     def run(self):
+        """
+        Boucle principale du mini-jeu de dépôt de déchets.
+        """
+        
         clock = pygame.time.Clock()
 
         while self.running:
@@ -78,7 +87,6 @@ class MiniJeuDepot(Fenetre):
                         if self.tentatives > 0:
                             self.phase = "VOL"
                             rad = math.radians(self.angle_fleche)
-                            # On fait partir le déchet de la main du joueur (un peu au dessus du centre)
                             self.pos_dechet = [float(self.player.rect.centerx), float(self.player.rect.top + 20)]
                             self.vel_dechet = [
                                 self.puissance_lancer * math.cos(rad),
@@ -90,16 +98,17 @@ class MiniJeuDepot(Fenetre):
 
             # --- LOGIQUE ---
             if self.phase == "VISEE":
+                # Le curseur d'angle oscille entre 0 et 90 degrés.
                 self.angle_fleche += self.vitesse_fleche
                 if self.angle_fleche > 90 or self.angle_fleche < 0:
                     self.vitesse_fleche *= -1
 
             elif self.phase == "VOL":
+                # Applique la physique du lancer sur le déchet.
                 self.pos_dechet[0] += self.vel_dechet[0]
                 self.vel_dechet[1] += self.gravite_mini_jeu
                 self.pos_dechet[1] += self.vel_dechet[1]
 
-                # Rectangle de collision basé sur l'image du déchet
                 dechet_rect = self.dechet_img.get_rect(topleft=(self.pos_dechet[0], self.pos_dechet[1]))
 
                 if dechet_rect.colliderect(self.poubelle_rect):
@@ -109,11 +118,11 @@ class MiniJeuDepot(Fenetre):
                     self.phase = "RESULTAT"
 
             elif self.phase == "RESULTAT":
+                # Après un lancer, on réinitialise ou on termine le mini-jeu.
                 if self.tentatives > 0:
                     self.teleporter_joueur()
                     self.phase = "VISEE"
                 else:
-                    # Ici tu peux ajouter un petit délai avant de fermer
                     self.running = False
 
             # --- AFFICHAGE ---
@@ -121,7 +130,6 @@ class MiniJeuDepot(Fenetre):
             self.screen.blit(self.player.image, self.player.rect)
             self.screen.blit(self.poubelle_img, self.poubelle_rect)
 
-            # UI
             surface_essais = self.police.render(f"Déchets : {self.tentatives}", True, (255, 255, 255))
             surface_score = self.police.render(f"Triés : {self.dechets_reussis}", True, (50, 255, 50))
             self.screen.blit(surface_essais, (30, 30))

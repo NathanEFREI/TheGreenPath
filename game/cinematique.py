@@ -5,6 +5,8 @@ import os
 import pygame
 from ui.dialogue import afficher_dialogue
 
+# BASE_DIR est le dossier parent du dossier 'game'.
+# Il est utilisé pour former des chemins absolus vers les ressources du jeu.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SLIDES = [
@@ -59,19 +61,21 @@ SLIDES = [
 
 class SceneCinematique():
     def __init__(self, screen: pygame.Surface, callback_fin, volume):
-        
-        self.screen       = screen
+        """Initialise la scène de cinématique avec l'écran, le volume et le callback de fin."""
+
+        self.screen = screen
         self.callback_fin = callback_fin
         self.WIDTH, self.HEIGHT = screen.get_size()
         self.volume = volume
 
-        #Musique avec fade in automatique
+        # Musique de la cinématique, avec fondu entrant de 3 secondes.
         musique = os.path.join(BASE_DIR, "assets", "Sound", "musique_cinematique.mp3")
         try:
             pygame.mixer.music.load(musique)
             pygame.mixer.music.set_volume(self.volume)
-            pygame.mixer.music.play(-1, fade_ms=3000)  # fade in 3s
+            pygame.mixer.music.play(-1, fade_ms=3000)
         except Exception:
+            # Si l'audio ne peut pas être lu, on ignore l'erreur et on continue.
             pass
 
         # Fade écran — on remplit l'écran en noir dès le départ pour masquer
@@ -130,6 +134,7 @@ class SceneCinematique():
     # ------------------------------
 
     def handle_event(self, event: pygame.event.Event) -> None:
+        """Traite les entrées clavier pendant la cinématique."""
         if event.type != pygame.KEYDOWN:
             return
 

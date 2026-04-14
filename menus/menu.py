@@ -1,20 +1,27 @@
 import json
 import os
 
+import pygame
 from menus.creer_partie import creer_party
 from constante import FPS
 from game.cinematique import SceneCinematique
 from game.game import Game
 from game.utils import draw_hover_button, confirm_quit
 from game.parametre import afficher_parametres
-import pygame
 
+# Ce fichier gère le menu principal du jeu.
+# Il propose de créer une partie, d'accéder aux paramètres et de quitter.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SETTINGS_PATH = os.path.join(BASE_DIR, "save.json")
 DEFAULT_VOLUME = 0.4
 
 
 def load_volume():
+    """
+    Lit le volume stocké dans le fichier save.json.
+
+    Si le fichier est absent ou corrompu, retourne la valeur par défaut.
+    """
     try:
         with open(SETTINGS_PATH, "r", encoding="utf-8") as file:
             data = json.load(file)
@@ -26,6 +33,10 @@ def load_volume():
 
 
 def save_volume(volume):
+    """
+    Enregistre le volume courant dans save.json.
+    """
+    
     try:
         with open(SETTINGS_PATH, "w", encoding="utf-8") as file:
             json.dump({"volume": float(volume)}, file, indent=4)
@@ -34,6 +45,11 @@ def save_volume(volume):
 
 
 def main_menu():
+    """
+    Boucle principale du menu.
+
+    Affiche les options du menu et lance la cinématique puis le jeu si l'utilisateur démarre une partie.
+    """
     pygame.init()
     info = pygame.display.Info()
     WIDTH, HEIGHT = info.current_w, info.current_h
@@ -65,33 +81,32 @@ def main_menu():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                # L'utilisateur clique sur la croix de la fenêtre.
                 if confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
                     running = False
-                    cine.terminee = True  # Assure que la cinématique se ferme aussi
+                    cine.terminee = True
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    # Échap ferme un popup ouvert ou propose de quitter.
                     if fenetre:
-                        # Ferme le popup avec Échap
-                        fenetre        = False
+                        fenetre = False
                         darken_overlay = False
-                        active1        = False
-                        active2        = False
+                        active1 = False
+                        active2 = False
                     else:
                         if confirm_quit(screen, WIDTH, HEIGHT, font_bouton):
                             running = False
                             cine.terminee = True
-                            
 
                 elif fenetre:
-                    # --- Saisie clavier dans les boîtes ---
+                    # Saisie de texte dans le popup de création de partie.
                     if event.key == pygame.K_BACKSPACE:
                         if active1:
                             nom_partie = nom_partie[:-1]
                         elif active2:
                             nom_joueur = nom_joueur[:-1]
                     elif event.key == pygame.K_TAB:
-                        # Tab bascule entre les deux boîtes
                         active1, active2 = active2, active1
                     else:
                         if active1 and len(nom_partie) < 20:
@@ -146,15 +161,26 @@ def main_menu():
 
         # --- Dessin ---
         screen.blit(img_menu, (0, 0))
-        rect1 = draw_hover_button(pos_x, HEIGHT * 0.2, WIDTH / 2.5, HEIGHT / 6,
-                                  "orange", "Créer une partie", font_bouton, screen, "darkorchid1")
-        rect2 = draw_hover_button(pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6,
-                                  "orange", "Charger une partie", font_bouton, screen, "darkorchid1")
-        rect3 = draw_hover_button(pos_x, HEIGHT * 0.6, WIDTH / 2.5, HEIGHT / 6,
-                                  "orange", "Paramètre", font_bouton, screen, "darkorchid1")
-        rect4 = draw_hover_button(pos_x, HEIGHT * 0.8, WIDTH / 2.5, HEIGHT / 6,
-                                  "orange", "Quittez", font_bouton, screen, "darkorchid1")
 
+        # Boutons du menu principal.
+        rect1 = draw_hover_button(
+            pos_x, HEIGHT * 0.2, WIDTH / 2.5, HEIGHT / 6,
+            "orange", "Créer une partie", font_bouton, screen, "darkorchid1"
+        )
+        rect2 = draw_hover_button(
+            pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6,
+            "orange", "Charger une partie", font_bouton, screen, "darkorchid1"
+        )
+        rect3 = draw_hover_button(
+            pos_x, HEIGHT * 0.6, WIDTH / 2.5, HEIGHT / 6,
+            "orange", "Paramètre", font_bouton, screen, "darkorchid1"
+        )
+        rect4 = draw_hover_button(
+            pos_x, HEIGHT * 0.8, WIDTH / 2.5, HEIGHT / 6,
+            "orange", "Quittez", font_bouton, screen, "darkorchid1"
+        )
+
+        # Si un popup est ouvert, on assombrit le reste de l'écran.
         if darken_overlay:
             overlay = pygame.Surface((WIDTH, HEIGHT))
             overlay.fill((0, 0, 0))

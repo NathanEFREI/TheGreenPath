@@ -3,13 +3,17 @@ from menus.menu import main_menu
 import sys
 import os
 
-# Ajoute la racine au path pour que tous les imports fonctionnent
+from menus.menu import main_menu
+
+# Ajoute la racine du projet au path Python pour éviter les problèmes d'import.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+
+# from codecarbon import EmissionsTracker
 # tracker = EmissionsTracker()
 # tracker.start()
 
 if __name__ == "__main__":
-    #try:
+    # Démarrer le menu principal du jeu.
     main_menu()
-    #finally:
-        #tracker.stop()
+    # tracker.stop()  # Arrêter le tracker si activé
