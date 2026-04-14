@@ -20,6 +20,8 @@ class LvlRecyclage(Fenetre):
 
         # --- CHARGEMENT DU BACKGROUND ---
         base_path = os.path.dirname(__file__)
+        self.ratio_w = self.WIDTH / 1536
+        self.ratio_h = self.HEIGHT / 864
         # Remplace "ville1.png" par l'image de fond spécifique au niveau recyclage si tu en as une
         image_path = os.path.join(base_path, "..", "assets", "ville1.png")
         icone_path = os.path.join(base_path, "..", "assets", "icones", "icone_dechets.png")
@@ -35,11 +37,15 @@ class LvlRecyclage(Fenetre):
             "Pour ton épreuve, des créatures faites de déchets vont apparaître. Tu devras les vaincre, puis récupérer les déchets afin de les envoyer dans la poubelle de tri ! Chaque déchet bien trié est une aide précieuse pour la planète. À toi de jouer, jeune aventurier"
         ]
         # --- CHARGEMENT DU GARDIEN ---
-        path_gardien = os.path.join(os.path.dirname(__file__), "..", "assets", "Gardiens", "gardien_recyclag.png")
+        path_gardien = os.path.join(os.path.dirname(__file__), "..", "assets", "gardien", "gardien-reparer.png")
         self.gardien_img = pygame.image.load(path_gardien).convert_alpha()
-        self.gardien_img = pygame.transform.scale(self.gardien_img, (200, 200))
+        taille_g = int(150 * self.ratio_w)
+        self.gardien_img = pygame.transform.flip(self.gardien_img, True, False)
+        self.gardien_img = pygame.transform.scale(self.gardien_img, (taille_g, taille_g))
         # On le place à gauche du sol
-        self.gardien_rect = self.gardien_img.get_rect(bottomleft=(50, self.HEIGHT - 170))
+        pos_x_gardien = int(50 * self.ratio_w)
+        pos_y_gardien = self.HEIGHT - int(200 * self.ratio_h)
+        self.gardien_rect = self.gardien_img.get_rect(bottomleft=(pos_x_gardien, pos_y_gardien))
         self.index_dialogue = 0
         self.dialogue_actuel = (self.textes_gardien[self.index_dialogue], "green")
         self.player = Player(self.WIDTH, self.HEIGHT)
@@ -206,14 +212,21 @@ class LvlRecyclage(Fenetre):
                         self.dernier_recharge = maintenant
 
                 # B. SPAWN ET NETTOYAGE DES MONSTRES
+                # B. SPAWN ET NETTOYAGE DES MONSTRES
                 if temps_restant > 0:
-                    # Le temps n'est pas fini : on fait spawner
                     if maintenant - self.dernier_spawn > self.intervalle_spawn:
-                        pos_x = random.randint(self.WIDTH + 50, self.WIDTH + 300)
-                        sol_y = self.HEIGHT - 250
+                        # Position X au-delà de l'écran adaptative (+50 à +300)
+                        spawn_min = self.WIDTH + int(50 * self.ratio_w)
+                        spawn_max = self.WIDTH + int(300 * self.ratio_w)
+                        pos_x = random.randint(spawn_min, spawn_max)
+
+                        # La hauteur du sol adaptative (le fameux 250 de base)
+                        sol_y = self.HEIGHT - int(250 * self.ratio_h)
+
                         type_choisi = random.choice([1, 2])
 
-                        nouveau_monstre = Monstre(pos_x, sol_y, self.WIDTH, self.HEIGHT, type_monstre=type_choisi)
+                        nouveau_monstre = Monstre(pos_x, sol_y, self.WIDTH, self.HEIGHT,
+                                                  type_monstre=type_choisi)
                         self.groupe_monstres.add(nouveau_monstre)
                         self.dernier_spawn = maintenant
                 else:
@@ -239,6 +252,7 @@ class LvlRecyclage(Fenetre):
                         if not monstre.invulnerable:  # On vérifie sa mémoire d'invulnérabilité
                             if monstre.subir_degats(projectile.degats):
                                 self.compteur += 1  # On augmente le score s'il meurt
+                                self.munitions += 4
 
             # --- 3. PHYSIQUE ET DÉPLACEMENTS DU JOUEUR ---
             self.move = True
