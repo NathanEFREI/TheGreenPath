@@ -183,15 +183,15 @@ class Game(Fenetre):
         self.epreuve_tri_terminee = False 
         self.tri_autorise = False
 
-
+        self.epreuve_qcm_terminee = False
 
         # Liste des répliques du Gardien
         self.dialogues_gardien = [
-            "Je suis le gardien de la lumière, celui qui veille à ce que l’énergie ne soit jamais gaspillée. Je parcours les maisons et les villes pour m’assurer que chaque lumière est utilisée avec sagesse. Mais sais-tu que toi aussi, tu peux m’aider à protéger notre planète ?",
-            "Quand tu quittes une pièce, éteindre la lumière peut sembler être un tout petit geste… pourtant, il est très important. Produire de l’électricité demande beaucoup d’énergie, et parfois cela pollue l’air et abîme la nature.",
-            "En laissant une lumière allumée pour rien, on gaspille cette énergie. Mais en l’éteignant, tu aides à protéger les animaux, les plantes et même l’air que nous respirons.",
-            "Chaque petit geste compte. Alors souviens-toi : quand tu pars d’une pièce, pense à éteindre la lumière. C’est ainsi que, petit à petit, tu deviens toi aussi un véritable gardien de la nature.",
-            "Pour prouver que tu es prêt à devenir un protecteur de ton environnement, voici ton épreuve : des lumières vont s’allumer autour de toi. Tu devras toutes les éteindre le plus vite possible, avant que le temps ne soit écoulé. Sois rapide et attentif !"
+            "Je suis le gardien de la lumière, celui qui veille à ce que l'énergie ne soit jamais gaspillée. Je parcours les maisons et les villes pour m'assurer que chaque lumière est utilisée avec sagesse. Mais sais-tu que toi aussi, tu peux m'aider à protéger notre planète ?",
+            "Quand tu quittes une pièce, éteindre la lumière peut sembler être un tout petit geste… pourtant, il est très important. Produire de l'électricité demande beaucoup d'énergie, et parfois cela pollue l'air et abîme la nature.",
+            "En laissant une lumière allumée pour rien, on gaspille cette énergie. Mais en l'éteignant, tu aides à protéger les animaux, les plantes et même l'air que nous respirons.",
+            "Chaque petit geste compte. Alors souviens-toi : quand tu pars d'une pièce, pense à éteindre la lumière. C'est ainsi que, petit à petit, tu deviens toi aussi un véritable gardien de la nature.",
+            "Pour prouver que tu es prêt à devenir un protecteur de ton environnement, voici ton épreuve : des lumières vont s'allumer autour de toi. Tu devras toutes les éteindre le plus vite possible, avant que le temps ne soit écoulé. Sois rapide et attentif !"
         ]
         self.indice_dialogue = -1
 
@@ -361,8 +361,10 @@ class Game(Fenetre):
                         elif self.salle_actuelle == "salle_qcm":
                             if not self.qcm.active:
                                 self.qcm.lancer()
+                                self.dialogue_actuel = None
                             elif self.qcm.termine:
                                 self.qcm.active = False
+                                self.epreuve_qcm_terminee =True
 
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False

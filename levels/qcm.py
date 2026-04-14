@@ -9,22 +9,57 @@ class QCM:
         
         self.questions = [
             {
-                "titre": "Gardien Lumière : Pourquoi éteindre la lumière ?",
-                "reponses": ["Économiser l'énergie", "Les ampoules ont peur", "Pour faire joli"],
+                "titre": "Pourquoi éteindre la lumière en partant ?",
+                "reponses": ["Pour économiser l'énergie", "Pour faire joli", "Car les ampoules ont peur"],
                 "correct": 0
             },
             {
-                "titre": "Gardien Tri : Où va le carton propre ?",
-                "reponses": ["Poubelle Verte", "Poubelle Jaune", "Par terre"],
+                "titre": "Quel est l'impact du gaspillage d'énergie ?",
+                "reponses": ["Ça crée de la pluie", "Ça pollue l'air et la nature", "Aucun impact"],
                 "correct": 1
             },
             {
-                "titre": "Dernier geste : Pour économiser l'eau...",
-                "reponses": ["Je prends un bain", "Je laisse couler", "Je prends une douche"],
+                "titre": "Que deviennent les déchets bien triés ?",
+                "reponses": ["Ils disparaissent", "De nouvelles ressources", "De la nourriture"],
+                "correct": 1
+            },
+            {
+                "titre": "Où doit-on jeter un carton propre ?",
+                "reponses": ["Poubelle Verte", "Poubelle Marron", "Poubelle Jaune"],
                 "correct": 2
+            },
+            {
+                "titre": "Quel est le risque d'un mauvais tri ?",
+                "reponses": ["Polluer la nature", "Casser la poubelle", "Changer le temps"],
+                "correct": 0
+            },
+            {
+                "titre": "Que suit le compteur en haut à gauche ?",
+                "reponses": ["Ta vitesse", "Tes gestes écologiques", "Ton nombre de pas"],
+                "correct": 1
+            },
+            {
+                "titre": "Comment s'appelle la 1ère phase du lancer ?",
+                "reponses": ["Phase de Vol", "Phase de Visée", "Phase de Panique"],
+                "correct": 1
+            },
+            {
+                "titre": "Éteindre les lumières aide aussi...",
+                "reponses": ["Les animaux et plantes", "À dormir plus vite", "À manger mieux"],
+                "correct": 0
+            },
+            {
+                "titre": "Où jeter un reste de pomme ?",
+                "reponses": ["Poubelle Jaune", "Poubelle Verte", "Poubelle Marron"],
+                "correct": 2
+            },
+            {
+                "titre": "Quelle est la leçon des Gardiens ?",
+                "reponses": ["Chaque petit geste compte", "Il faut tout acheter", "C'est trop difficile"],
+                "correct": 0
             }
         ]
-        
+            
         self.indice_question = 0
         self.score = 0
         self.active = False
