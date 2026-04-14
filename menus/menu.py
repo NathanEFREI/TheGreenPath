@@ -10,7 +10,7 @@ from game.parametre import afficher_parametres
 import pygame
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SETTINGS_PATH = os.path.join(BASE_DIR, "settings.json")
+SETTINGS_PATH = os.path.join(BASE_DIR, "save.json")
 DEFAULT_VOLUME = 0.4
 
 
