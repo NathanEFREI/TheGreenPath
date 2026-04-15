@@ -24,9 +24,9 @@ class QCM:
                 "correct": 1
             },
             {
-                "titre": "Où doit-on jeter un carton propre ?",
+                "titre": "Où doit-on jeter un carton sale ?",
                 "reponses": ["Poubelle Verte", "Poubelle Marron", "Poubelle Jaune"],
-                "correct": 2
+                "correct": 3
             },
             {
                 "titre": "Quel est le risque d'un mauvais tri ?",

@@ -364,7 +364,9 @@ class Game(Fenetre):
 
                         elif self.salle_actuelle == "salle_qcm":
                             if self.epreuve_qcm_terminee:
-                                pass
+                                from menus.menu import main_menu
+                                self.running = False
+                                main_menu()
                          
                             elif not self.qcm_intro_faite:
                                 # Premier appui sur E : Dialogue d'intro
@@ -388,7 +390,7 @@ class Game(Fenetre):
                                     couleur = "red"
                                 
                                 self.dialogue_actuel = (msg, couleur)
-
+                                
                 elif event.type == pygame.KEYUP:
                     self.pressed[event.key] = False
 
