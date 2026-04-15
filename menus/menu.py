@@ -177,7 +177,7 @@ def main_menu():
         )
         rect4 = draw_hover_button(
             pos_x, HEIGHT * 0.7, WIDTH / 2.5, HEIGHT / 6,
-            "orange", "Quittez", font_bouton, screen, "darkorchid1"
+            "orange", "Quitter", font_bouton, screen, "darkorchid1"
         )
 
         # Si un popup est ouvert, on assombrit le reste de l'écran.
