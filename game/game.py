@@ -377,13 +377,13 @@ class Game(Fenetre):
                                 self.qcm.active = False
                                 self.epreuve_qcm_terminee =True
                                 if score == 10:
-                                    msg = f("Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !")
+                                    msg = f"Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !"
                                     couleur = "green"
                                 elif 5 <= score < 10:
-                                    msg = f("Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès.")
+                                    msg = f"Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès."
                                     couleur = "black"
                                 else:
-                                    msg = f("C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !")
+                                    msg = f"C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !"
                                     couleur = "red"
                                 
                                 self.dialogue_actuel = (msg, couleur)
