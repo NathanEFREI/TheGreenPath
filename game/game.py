@@ -467,6 +467,7 @@ class Game(Fenetre):
                 tri_poubelle.run()
                 self.salle_actuelle = "salle_qcm"
             elif self.salle_actuelle == "salle_qcm":
+                self.geste_count = min(self.geste_max, self.geste_count + 1)
                 self.screen.blit(self.bg_qcm, (0, -int(self.HEIGHT * 0.25)))
                 y_sol = self.HEIGHT - self._ground_offset()
                 self.screen.blit(self.gardien_img, (self.WIDTH // 4 - self.gardien_rect.width // 2, y_sol - self.gardien_img.get_height()))
