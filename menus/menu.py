@@ -164,19 +164,19 @@ def main_menu():
 
         # Boutons du menu principal.
         rect1 = draw_hover_button(
-            pos_x, HEIGHT * 0.2, WIDTH / 2.5, HEIGHT / 6,
+            pos_x, HEIGHT * 0.3, WIDTH / 2.5, HEIGHT / 6,
             "orange", "Créer une partie", font_bouton, screen, "darkorchid1"
         )
-        rect2 = draw_hover_button(
-            pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6,
-            "orange", "Charger une partie", font_bouton, screen, "darkorchid1"
-        )
+        #rect2 = draw_hover_button(
+            #pos_x, HEIGHT * 0.4, WIDTH / 2.5, HEIGHT / 6,
+            #"orange", "Charger une partie", font_bouton, screen, "darkorchid1"
+        #)
         rect3 = draw_hover_button(
-            pos_x, HEIGHT * 0.6, WIDTH / 2.5, HEIGHT / 6,
+            pos_x, HEIGHT * 0.5, WIDTH / 2.5, HEIGHT / 6,
             "orange", "Paramètre", font_bouton, screen, "darkorchid1"
         )
         rect4 = draw_hover_button(
-            pos_x, HEIGHT * 0.8, WIDTH / 2.5, HEIGHT / 6,
+            pos_x, HEIGHT * 0.7, WIDTH / 2.5, HEIGHT / 6,
             "orange", "Quittez", font_bouton, screen, "darkorchid1"
         )
 
