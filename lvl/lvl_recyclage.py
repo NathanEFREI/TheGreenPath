@@ -34,7 +34,7 @@ class LvlRecyclage(Fenetre):
             "Quand tu jettes quelque chose, il ne disparaît pas vraiment. Les déchets peuvent polluer la terre, l’eau et mettre en danger les animaux. C’est pour cela qu’il est très important de bien trier ses déchets.",
             "En séparant le plastique, le papier, le verre et les restes de nourriture, on peut recycler et donner une seconde vie à beaucoup de choses. Cela permet de fabriquer de nouveaux objets sans abîmer encore plus la planète.",
             "Si on ne trie pas, les déchets s’accumulent et la nature souffre. Mais si chacun fait un petit effort, ensemble, on peut garder la Terre propre et en bonne santé.",
-            "Pour ton épreuve, des créatures faites de déchets vont apparaître. Tu devras les vaincre, puis récupérer les déchets afin de les envoyer dans la poubelle de tri ! Chaque déchet bien trié est une aide précieuse pour la planète. À toi de jouer, jeune aventurier"
+            "Pour ton épreuve, des créatures faites de déchets vont apparaître. Tu devras les vaincre en appuyant sur F, puis récupérer les déchets afin de les envoyer dans la poubelle de tri en appuyant sur espace ! Chaque déchet bien trié est une aide précieuse pour la planète. À toi de jouer, jeune aventurier"
         ]
         # --- CHARGEMENT DU GARDIEN ---
         path_gardien = os.path.join(os.path.dirname(__file__), "..", "assets", "gardien", "gardien-reparer.png")
