@@ -241,7 +241,7 @@ class Game(Fenetre):
         return self._scale_item(image, target_width=target_width)
 
     def _ground_offset(self):
-        return max(180, int(self.HEIGHT * 0.20))
+        return max(180, int(self.HEIGHT * 0.25))
 
     def _position_gardiens(self):
         bottom_offset = self._ground_offset() + 20
@@ -289,6 +289,7 @@ class Game(Fenetre):
         self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
         self.bg_epreuve1 = pygame.transform.scale(self.bg_epreuve1_base, (self.WIDTH, self.HEIGHT + 60))
         self.bg_epreuve2 = pygame.transform.scale(self.bg_epreuve2_base, (self.WIDTH, self.HEIGHT))
+        self.bg_qcm = pygame.transform.scale(self.bg_qcm_base, (self.WIDTH, self.HEIGHT + 400))
         self.gardien_img = self._scale_gardien(self.gardien_img_base)
         self.gardien_tri_img = self._scale_gardien(self.gardien_tri_img_base)
         self._position_gardiens()
@@ -377,13 +378,13 @@ class Game(Fenetre):
                                 self.qcm.active = False
                                 self.epreuve_qcm_terminee =True
                                 if score == 10:
-                                    msg = f"Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !"
+                                    msg = f("Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !")
                                     couleur = "green"
                                 elif 5 <= score < 10:
-                                    msg = f"Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès."
+                                    msg = f("Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès.")
                                     couleur = "black"
                                 else:
-                                    msg = f"C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !"
+                                    msg = f("C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !")
                                     couleur = "red"
                                 
                                 self.dialogue_actuel = (msg, couleur)
@@ -411,7 +412,10 @@ class Game(Fenetre):
                     self.fade_opacite = 255
 
                     self.salle_actuelle = self.prochaine_salle_nom
-                    self.background = pygame.transform.scale(self.prochain_bg, (self.WIDTH,self.HEIGHT))
+                    if self.prochaine_salle_nom == "salle_qcm":
+                        self.background = self.prochain_bg 
+                    else:
+                        self.background = pygame.transform.scale(self.prochain_bg, (self.WIDTH,self.HEIGHT))
                     self.player.rect.left = self.prochaine_pos_x
                     self.faded_direction = -1
 
@@ -447,6 +451,7 @@ class Game(Fenetre):
             # Afficher le background
             self.screen.blit(self.background, (0, 0))
             # appeler le niveau: self.screen.blits() pour mettre les plateformes
+            
 
 
   
@@ -468,7 +473,7 @@ class Game(Fenetre):
                 self.salle_actuelle = "salle_qcm"
             elif self.salle_actuelle == "salle_qcm":
                 self.geste_count = min(self.geste_max, self.geste_count + 1)
-                self.screen.blit(self.bg_qcm, (0, -int(self.HEIGHT * 0.25)))
+                self.screen.blit(self.bg_qcm, (0, -240))
                 y_sol = self.HEIGHT - self._ground_offset()
                 self.screen.blit(self.gardien_img, (self.WIDTH // 4 - self.gardien_rect.width // 2, y_sol - self.gardien_img.get_height()))
                 self.screen.blit(self.gardien_tri_img, (self.WIDTH // 2 - self.gardien_tri_img.get_width() // 2, y_sol - self.gardien_tri_img.get_height()))
