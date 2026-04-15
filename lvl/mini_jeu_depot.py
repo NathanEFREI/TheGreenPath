@@ -22,7 +22,7 @@ class MiniJeuDepot(Fenetre):
 
         # --- CHARGEMENT DU FOND ET DU JOUEUR ---
         base_path = os.path.dirname(__file__)
-        image_path = os.path.join(base_path, "..", "assets", "ville1.png")
+        image_path = os.path.join(base_path, "..", "assets", "villereparer.webp")
         self.background_base = pygame.image.load(image_path).convert()
         self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
 

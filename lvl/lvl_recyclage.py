@@ -23,7 +23,7 @@ class LvlRecyclage(Fenetre):
         self.ratio_w = self.WIDTH / 1536
         self.ratio_h = self.HEIGHT / 864
         # Remplace "ville1.png" par l'image de fond spécifique au niveau recyclage si tu en as une
-        image_path = os.path.join(base_path, "..", "assets", "ville2reparer.jpeg")
+        image_path = os.path.join(base_path, "..", "assets", "villereparer.webp")
         icone_path = os.path.join(base_path, "..", "assets", "icones", "icone_dechets.png")
         self.background_base = pygame.image.load(image_path).convert()
         self.background = pygame.transform.scale(self.background_base, (self.WIDTH, self.HEIGHT))
@@ -44,7 +44,7 @@ class LvlRecyclage(Fenetre):
         self.gardien_img = pygame.transform.scale(self.gardien_img, (taille_g, taille_g))
         # On le place à gauche du sol
         pos_x_gardien = int(50 * self.ratio_w)
-        pos_y_gardien = self.HEIGHT - int(100 * self.ratio_h)
+        pos_y_gardien = self.HEIGHT - int(200 * self.ratio_h)
         self.gardien_rect = self.gardien_img.get_rect(bottomleft=(pos_x_gardien, pos_y_gardien))
         self.index_dialogue = 0
         self.dialogue_actuel = (self.textes_gardien[self.index_dialogue], "green")
@@ -239,6 +239,7 @@ class LvlRecyclage(Fenetre):
                     if mini_jeu.dechets_reussis >= 5:
                         # --- GAGNÉ ---
                         self.running = False  # On quitte ce niveau définitivement
+                        return
 
                     else:
                         # --- PERDU : ON RÉINITIALISE LE NIVEAU ---
