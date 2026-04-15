@@ -378,13 +378,13 @@ class Game(Fenetre):
                                 self.qcm.active = False
                                 self.epreuve_qcm_terminee =True
                                 if score == 10:
-                                    msg = f("Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !")
+                                    msg = f"Incroyable ! {score}/10. Avec tes nouvelles connaissances, tu es le nouveau Gardien de Nitidopolis !"
                                     couleur = "green"
                                 elif 5 <= score < 10:
-                                    msg = f("Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès.")
+                                    msg = f"Bien joué ! {score}/10. Tu as de solides bases pour protéger la nature, mais tu peux encore faire des progrès."
                                     couleur = "black"
                                 else:
-                                    msg = f("C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !")
+                                    msg = f"C'est un score de {score}/10. Tu devrais relire les conseils des autres gardiens !"
                                     couleur = "red"
                                 
                                 self.dialogue_actuel = (msg, couleur)
@@ -449,15 +449,16 @@ class Game(Fenetre):
                 self.transition_vers("salle_qcm", self.bg_qcm)
 
             # Afficher le background
-            self.screen.blit(self.background, (0, 0))
+            
             # appeler le niveau: self.screen.blits() pour mettre les plateformes
             
 
 
   
             if self.salle_actuelle == "lumiere":
-                self.screen.blit(self.background, (0, -60)) # On remonte un peu pour le décor
-                self.screen.blit(self.gardien_img, self.gardien_rect)
+                self.screen.blit(self.background, (0, 0))
+                self.screen.blit(self.background, (0, -55)) # On remonte un peu pour le décor
+                self.screen.blit(self.gardien_img, (self.gardien_rect.x, self.gardien_rect.y + 40))
                 self.epreuve.draw() # Ampoules uniquement ici
                 
             elif self.salle_actuelle == "tri_dechets":
@@ -473,7 +474,7 @@ class Game(Fenetre):
                 self.salle_actuelle = "salle_qcm"
             elif self.salle_actuelle == "salle_qcm":
                 self.geste_count = min(self.geste_max, self.geste_count + 1)
-                self.screen.blit(self.bg_qcm, (0, -240))
+                self.screen.blit(self.bg_qcm, (0, -380))
                 y_sol = self.HEIGHT - self._ground_offset()
                 self.screen.blit(self.gardien_img, (self.WIDTH // 4 - self.gardien_rect.width // 2, y_sol - self.gardien_img.get_height()))
                 self.screen.blit(self.gardien_tri_img, (self.WIDTH // 2 - self.gardien_tri_img.get_width() // 2, y_sol - self.gardien_tri_img.get_height()))
